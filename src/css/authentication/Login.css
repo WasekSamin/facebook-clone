@@ -1,0 +1,78 @@
+.login__grid {
+    display: grid;
+    height: 100vh;
+    place-items: center;
+}
+
+.login__grid > .MuiGrid-root {
+    display: flex;
+    align-items: center;
+}
+
+.login__gridLeft {
+    display: flex;
+    flex-direction: column;
+}
+
+#login__formDiv {
+    border: 1px solid var(--border-primary);
+    padding: 20px;
+    border-radius: 10px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+#login__form .MuiFormControl-root {
+    width: 100%;
+}
+
+#login__form > div:first-child {
+    margin-bottom: 15px;
+}
+
+.register__form > div {
+    margin-bottom: 15px;
+}
+
+.register__form > div:nth-child(4),
+.register__form > div:nth-child(5),
+.register__form > div:last-child {
+    margin-bottom: 0;
+}
+
+#sign__inBtn {
+    width: 100%;
+    margin: 15px 0 10px 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.login__forgotBtn {
+    display: flex;
+    justify-content: center;
+}
+
+#navigate__reigsterBtn {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+@media (max-width: 767px) {
+    .login__grid {
+        height: auto;
+        margin: 1.5rem 0;
+    }
+
+    .login__grid .MuiGrid-item:first-child {
+        margin-bottom: 0.7rem;
+    }
+
+    .login__grid .MuiGrid-item {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+}

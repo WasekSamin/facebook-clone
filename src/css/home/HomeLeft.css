@@ -1,0 +1,42 @@
+.home__leftMainDiv {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 5rem;
+    height: 100%;
+    width: 20%;
+}
+
+#home__leftProfileUsernameText {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 1rem;
+}
+
+#home__leftProfileUsernameText > span {
+    font-weight: 600;
+    color: black;
+}
+
+.home__leftLinkList > ul a {
+    width: 100%;
+    color: black;
+}
+
+.home__leftLinkList > ul a span {
+    font-weight: 600;
+    color: var(--slate-600);
+}
+
+.home__leftLinkBadges > .BaseBadge-badge  {
+    color: white;
+}
+
+@media (max-width: 991px) {
+    .home__leftMainDiv {
+        display: none;
+        width: 0;
+    }
+}

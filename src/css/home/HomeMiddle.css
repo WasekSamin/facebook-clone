@@ -1,0 +1,16 @@
+.home__middleMainDiv {
+    width: 50%;
+}
+
+@media (max-width: 991px) {
+    .home__middleMainDiv {
+        width: 60%;
+    }
+}
+
+@media (max-width: 739px) {
+    .home__middleMainDiv {
+        width: 100%;
+        margin: 0 auto;
+    }
+}

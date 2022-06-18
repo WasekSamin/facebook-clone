@@ -1,0 +1,8 @@
+.home__mainDiv {
+    position: relative;
+    top: 5rem;
+}
+
+#home__mainDivStack {
+    column-gap: 2rem;
+}

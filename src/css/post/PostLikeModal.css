@@ -1,0 +1,83 @@
+#show__postLikeModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 6;
+}
+
+#post__likeModalDiv {
+  width: 50%;
+  height: 90%;
+  position: absolute;
+  background-color: white;
+  border-radius: 10px;
+  top: 50%;
+  left: 50%;
+  z-index: 6;
+  transform: translate(-50%, -50%);
+  padding: 6px 10px;
+}
+
+#post__allLikesDiv {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#post__allLikesDiv::-webkit-scrollbar {
+  width: 6px;
+}
+
+#post__allLikesDiv::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+}
+
+#post__allLikesDiv::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  border-radius: 9999px;
+}
+
+#post__allLikesDiv > a {
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+#post__allLikesDiv > a:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.post__LikeUsernameText {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 767px) {
+  #post__likeModalDiv {
+    width: 60%;
+  }
+}
+
+@media (max-width: 600px) {
+  #post__likeModalDiv {
+    width: 70%;
+  }
+}
+
+@media (max-width: 499px) {
+  #post__likeModalDiv {
+    width: 80%;
+  }
+}
+
+@media (max-width: 399px) {
+  #post__likeModalDiv {
+    width: 95%;
+  }
+}

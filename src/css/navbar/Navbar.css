@@ -1,0 +1,281 @@
+.navbar__mainDiv {
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 0 8px 0px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 5;
+}
+
+#navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  column-gap: 1.3rem;
+}
+
+.navbar__logoDiv {
+  width: 20%;
+}
+
+.navbar__rightDiv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 80%;
+}
+
+.navbar__searchDiv {
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  width: 62.5%;
+  background-color: var(--bg-primary);
+  border-radius: 9999px;
+  padding: 0 10px;
+  overflow-x: hidden;
+}
+
+.navbar__searchDiv > input {
+  padding: 10px 0;
+  flex: 1;
+  border-radius: 9999px;
+  outline: none;
+  border: none;
+  background-color: transparent;
+}
+
+.navbar__searchDiv svg {
+  color: var(--slate-500);
+}
+
+#navbar__rightContent {
+  width: 37.5%;
+  margin-left: 16px;
+}
+
+.clear__navbarSearchField {
+  cursor: pointer;
+}
+
+#navbar__profileUsername {
+  display: none;
+  font-weight: 600;
+  color: black;
+  opacity: 0.7;
+}
+
+#navbar__hamburger,
+#navbar__mobileExtraLinks,
+.mobile__searchDiv,
+#overlay,
+#navbar__mobileDivider,
+#mobile__searchModal {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  #navbar__hamburger {
+    display: inline-flex;
+  }
+
+  .navbar__logoDiv {
+    width: unset;
+  }
+
+  .navbar__rightDiv {
+    width: unset;
+    flex: 1;
+  }
+
+  #navbar__logoutBtn {
+    display: none;
+  }
+
+  #navbar__mobileDivider {
+    display: block;
+    margin-bottom: 0.7rem;
+  }
+
+  #overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1;
+    opacity: 0;
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease-in-out;
+  }
+
+  #overlay.show__overlay {
+    z-index: 1;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .navbar__rightDiv {
+    justify-content: flex-end;
+  }
+
+  #navbar__mobileSidebar {
+    margin-left: 0;
+  }
+
+  .navbar__searchDiv {
+    margin: 0;
+  }
+
+  #navbar__profileAvatar {
+    margin-top: 1rem;
+  }
+
+  #navbar__profileAvatar .MuiAvatar-root {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+  }
+
+  #navbar__rightContent {
+    background-color: white;
+    padding: 15px;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    flex-direction: column-reverse;
+    height: 100vh;
+    width: 40%;
+    justify-content: space-between;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    z-index: 10;
+    margin-left: 0;
+    transition: all 0.3s ease-in-out;
+  }
+
+  #navbar__rightContent.show__mobileSidebar {
+    left: 0;
+  }
+
+  #navbar__profileUsername {
+    text-align: center;
+    margin: 0.5rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #navbar__mobileExtraLinks {
+    display: flex;
+  }
+
+  #navbar__mobileExtraLinks > a {
+    margin: 5px 0;
+  }
+
+  #navbar__mobileExtraLinks > a > button {
+    text-transform: capitalize;
+  }
+
+  #mobile__navbarLogoutBtn {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar__searchDiv {
+    display: none;
+  }
+
+  .mobile__searchDiv {
+    display: inline-flex;
+  }
+
+  #mobile__searchModal {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--bg-primary);
+  }
+
+  .mobile__searchModalFirstDiv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    color: white;
+  }
+
+  .mobile__searchModalLastDiv {
+    padding: 10px 10px 0 10px;
+  }
+
+  .mobile__searchModalLastDiv > div:first-child {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--border-primary);
+    background-color: white;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  #mobile__navbarSearch {
+    flex: 1;
+    outline: none;
+    border: none;
+  }
+
+  .mobile__navbarSearchPeopleList {
+    margin-top: 10px;
+    height: calc(100vh - 125px);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .mobile__navbarSearchPeopleList > a > button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    background-color: white;
+    border-bottom: 1px solid var(--border-primary);
+    text-transform: none;
+  }
+
+  .mobile__navbarSearchPeopleUsernameText {
+    margin-left: 10px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+  }
+}
+
+@media (max-width: 530px) {
+  #navbar__rightContent {
+    width: 50%;
+  }
+}
+
+@media (max-width: 410px) {
+  #navbar__rightContent {
+    width: 60%;
+  }
+}
+
+@media (max-width: 330px) {
+    #navbar__rightContent {
+        width: 80%;
+    }
+}

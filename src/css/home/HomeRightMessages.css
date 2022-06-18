@@ -1,0 +1,67 @@
+.home__rightMessages {
+  background-color: white;
+  border-radius: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  height: 100%;
+  overflow: hidden;
+}
+
+#home__messageSearchDiv {
+  padding: 6px;
+  background-color: var(--bg-primary);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+#home__messageSearchDiv > input {
+  flex: 1;
+  outline: none;
+  border: none;
+  background-color: transparent;
+}
+
+#home__rightMessageClearTextBtn {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+#home__rightAllMessages {
+  height: calc(100% - 95px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#home__rightAllMessages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#home__rightAllMessages::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+}
+
+#home__rightAllMessages::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  border-radius: 9999px;
+}
+
+.home__rightMessageUsernameText,
+.home__rightMessageUserChatText {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home__rightMessageDiv {
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.home__rightMessageDiv:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}

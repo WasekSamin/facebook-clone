@@ -1,0 +1,20 @@
+.home__rightMainDiv {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 5rem;
+    height: calc(100vh - 5rem);
+    width: 30%;
+}
+
+@media (max-width: 991px) {
+    .home__rightMainDiv {
+        width: 40%;
+    }
+}
+
+@media (max-width: 739px) {
+    .home__rightMainDiv {
+        display: none;
+        width: 0;
+    }
+}

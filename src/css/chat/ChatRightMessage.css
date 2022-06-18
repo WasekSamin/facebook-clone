@@ -1,0 +1,14 @@
+#chat__rightMessageDiv {
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  padding: 10px;
+}
+
+.message__rightSentUsernameText {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
