@@ -49,6 +49,7 @@ const ChatRightMessage = () => {
               </Stack>
             </Stack>
           </Stack>
+            {/* Updated */}
         </div>
         <div>
           <ChatRightMessageInput />
