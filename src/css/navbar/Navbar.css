@@ -53,6 +53,7 @@
 #navbar__rightContent {
   width: 37.5%;
   margin-left: 16px;
+  justify-content: flex-end;
 }
 
 .clear__navbarSearchField {

@@ -1,5 +1,5 @@
 import { Avatar, Divider, IconButton, Stack, Typography } from "@mui/material";
-import React, {useEffect, useRef} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import "../../css/post/PostCommentModal.css";
 import dummy1 from "../../dummy/images/img1.jpg";
@@ -11,16 +11,18 @@ const PostCommentModal = ({
   setShowPostCommentModal,
 }) => {
   console.log(showPostCommentModal);
+  const [postCommentText, setPostCommentText] = useState("");
 
   const postCommentModalRef = useRef(null);
 
   const closePostCommentModal = (event) => {
-    if (postCommentModalRef.current !== null &&
-        !postCommentModalRef.current.contains(event.target)
-      ) {
-        setShowPostCommentModal(null);
-      }
-  }
+    if (
+      postCommentModalRef.current !== null &&
+      !postCommentModalRef.current.contains(event.target)
+    ) {
+      setShowPostCommentModal(null);
+    }
+  };
 
   useEffect(() => {
     document.addEventListener("click", closePostCommentModal, true);
@@ -51,7 +53,11 @@ const PostCommentModal = ({
             </IconButton>
           </Stack>
           <Divider style={{ marginBottom: "0.7rem" }} />
-          <Stack style={{ height: "calc(100% - 5rem)" }} direction="column" justifyContent="space-between">
+          <Stack
+            style={{ height: "calc(100% - 5rem)" }}
+            direction="column"
+            justifyContent="space-between"
+          >
             <Stack direction="column" spacing={2} id="post__commentDivContent">
               <Stack direction="row" spacing={1}>
                 <Link to="#">
@@ -315,8 +321,16 @@ const PostCommentModal = ({
               id="post__commentModalCreateCommentDiv"
               spacing={1}
             >
-              <input type="text" placeholder="Post your comment..." />
-              <IconButton>
+              <input
+                value={postCommentText}
+                onChange={(e) => setPostCommentText(e.target.value)}
+                type="text"
+                placeholder="Post your comment..."
+              />
+              <IconButton
+                disabled={postCommentText.length > 0 ? false : true}
+                color="secondary"
+              >
                 <SendIcon />
               </IconButton>
             </Stack>

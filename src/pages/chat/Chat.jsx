@@ -1,4 +1,4 @@
-import { Grid, Stack } from "@mui/material";
+import { Container, Grid, Stack } from "@mui/material";
 import React from "react";
 import Navbar from "../../components/navbar/Navbar";
 import ChatLeft from "./ChatLeft";
@@ -7,11 +7,12 @@ import "../../css/chat/Chat.css";
 
 const Chat = () => {
   return (
-    <div style={{ overflow: "hidden" }}>
+    <div style={{ height: "100vh", overflow: "hidden" }}>
       <Navbar />
 
       <div id="chat__mainDiv">
-        <Grid container>
+        <Container maxWidth="lg">
+        <Grid id="chat__mainGridContainer" container style={{ overflow: "hidden" }}>
           <Grid item xs={3}>
             <ChatLeft />
           </Grid>
@@ -19,6 +20,7 @@ const Chat = () => {
           <ChatRight />
           </Grid>
         </Grid>
+        </Container>
       </div>
     </div>
   );

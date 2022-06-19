@@ -8,14 +8,25 @@ import { Link } from "react-router-dom";
 
 const HomeRightFriendRequests = () => {
   return (
-    <div style={{ height: "50vh" }}>
+    <div style={{ height: "50vh", overflow: "hidden" }}>
       <div style={{ marginTop: "1.5rem", height: "100%", overflow: "hidden" }}>
-        <Typography
-          variant="p"
-          style={{ fontSize: "1.1rem", color: "var(--slate-600)" }}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
         >
-          Friend Requests
-        </Typography>
+          <Typography
+            variant="p"
+            style={{ fontSize: "1.1rem", color: "var(--slate-600)" }}
+          >
+            Friend Requests
+          </Typography>
+          <Link to="/friend-requests/" style={{ color: "black" }}>
+            <Button color="secondary" style={{ textTransform: "capitalize" }}>
+              See All
+            </Button>
+          </Link>
+        </Stack>
         <div className="home__rightFriendRequests">
           <Stack id="home__rightAllFriendsDiv" direction="column" spacing={2}>
             <Stack direction="column" spacing={1.2}>

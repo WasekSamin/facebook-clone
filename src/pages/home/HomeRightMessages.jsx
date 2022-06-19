@@ -1,4 +1,4 @@
-import { Avatar, Divider, Stack, Typography } from "@mui/material";
+import { Avatar, Button, Divider, Stack, Typography } from "@mui/material";
 import React, { useState } from "react";
 import "../../css/home/HomeRightMessages.css";
 import SearchIcon from "@mui/icons-material/Search";
@@ -11,7 +11,7 @@ const HomeRightMessages = () => {
   const [messageSearchText, setMessageSearchText] = useState("");
 
   return (
-    <div style={{ height: "50vh" }}>
+    <div style={{ height: "50vh", overflow: "hidden" }}>
       <div className="home__rightMessages">
         <Stack
           direction="row"
@@ -24,6 +24,12 @@ const HomeRightMessages = () => {
           >
             Messages
           </Typography>
+
+          <Link to="/chat/" style={{ color: "black" }}>
+            <Button color="secondary" style={{ textTransform: "capitalize" }}>
+              See All
+            </Button>
+          </Link>
         </Stack>
         <Stack id="home__messageSearchDiv" direction="row" alignItems="center">
           <SearchIcon style={{ color: "var(--slate-500)" }} />

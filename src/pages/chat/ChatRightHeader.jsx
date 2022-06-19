@@ -5,6 +5,7 @@ import profileImg from "../../dummy/images/portImg.png";
 import "../../css/chat/ChatRightHeader.css";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { Link } from "react-router-dom";
+import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 
 const ChatRightHeader = () => {
   return (
@@ -12,7 +13,14 @@ const ChatRightHeader = () => {
       <Stack direction="row" justifyContent="space-between" spacing={2}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <div style={{ position: "relative" }}>
-            <Avatar alt="Wasek Samin" src={profileImg} />
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Link to="/chat/" id="chat__goBackBtn">
+                <KeyboardBackspaceIcon />
+              </Link>
+              <Link to="#">
+                <Avatar alt="Wasek Samin" src={profileImg} />
+              </Link>
+            </Stack>
             <div className="chat__leftUserStatusBadge">
               <div
                 style={{ backgroundColor: `${colorTheme.palette.green}` }}
@@ -30,10 +38,6 @@ const ChatRightHeader = () => {
             </Typography>
           </Link>
         </Stack>
-
-        <IconButton color="error">
-          <ExitToAppIcon />
-        </IconButton>
       </Stack>
     </div>
   );

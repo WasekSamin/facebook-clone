@@ -1,0 +1,41 @@
+#notification__mainDiv {
+    position: relative;
+    top: 5rem;
+}
+
+#notification__div {
+    background-color: white;
+    width: 48%;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    margin-left: 21.5%;
+}
+
+.notification__link {
+    padding: 0.5rem;
+    border-radius: 10px;
+}
+
+.notification__link:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 991px) {
+    #notification__div {
+        width: 60%;
+    }
+}
+
+@media (max-width: 767px) {
+    #notification__div {
+        width: 80%;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 499px) {
+    #notification__div {
+        width: 100%;
+    }
+}

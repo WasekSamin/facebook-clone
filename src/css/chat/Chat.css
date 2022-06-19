@@ -2,3 +2,23 @@
     position: relative;
     top: 4rem;
 }
+
+/* For mobile & tab screen */
+@media (max-width: 991px) {
+    #no__chatroomSelectedMainDiv {
+        display: none;
+    }
+    #chat__mainGridContainer > div:first-child {
+        width: 100%;
+        max-width: 100%;
+        flex-basis: 100%;
+        display: none;
+    }
+
+    #chat__mainGridContainer > div:last-child {
+        /* display: none; */
+        width: 100%;
+        max-width: 100%;
+        flex-basis: 100%;
+    }
+}

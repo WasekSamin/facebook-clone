@@ -70,7 +70,7 @@ const HomeLeft = () => {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link to="/">
+              <Link to="/notifications/">
                 <ListItemButton>
                   <ListItemIcon>
                     <Badge
@@ -87,7 +87,7 @@ const HomeLeft = () => {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link to="/">
+              <Link to="/friend-requests/">
                 <ListItemButton>
                   <ListItemIcon>
                     <Badge

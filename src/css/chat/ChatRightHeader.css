@@ -11,3 +11,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+#chat__goBackBtn {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  #chat__goBackBtn {
+    display: inline;
+  }
+}

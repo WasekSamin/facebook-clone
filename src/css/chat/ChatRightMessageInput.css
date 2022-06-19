@@ -1,0 +1,21 @@
+#chat__rightMessageInputParentDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid var(--border-primary);
+    margin-top: 0.1rem;
+}
+
+#chat__rightMessageInputDiv {
+    padding: 10px;
+    flex: 1;
+}
+
+#chat__rightMessageInputField {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 9999px;
+    outline: none;
+    border: none;
+    background-color: var(--bg-primary);
+}
