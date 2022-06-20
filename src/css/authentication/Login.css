@@ -61,6 +61,10 @@
     margin-top: 15px;
 }
 
+.register__alreadyHaveAccount:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 767px) {
     .login__grid {
         height: auto;

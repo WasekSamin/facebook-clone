@@ -143,7 +143,7 @@ const Login = () => {
                       <Button
                         color="secondary"
                         style={{
-                          fontSize: "0.75rem",
+                          fontSize: "0.83rem",
                           textTransform: "capitalize",
                         }}
                       >
@@ -158,7 +158,7 @@ const Login = () => {
                 <div id="navigate__reigsterBtn">
                   <Link to="/register/" style={{ textDecoration: "none" }}>
                     <Button
-                      style={{ backgroundColor: `${colorTheme.palette.blue}` }}
+                      style={{ backgroundColor: `${colorTheme.palette.blue}`, textTransform: "capitalize" }}
                       variant="contained"
                     >
                       Create New Account

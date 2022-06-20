@@ -62,11 +62,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -104,11 +104,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -145,11 +145,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Unfriend
                         </Button>
                       </Stack>
@@ -186,11 +186,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -227,11 +227,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -268,11 +268,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -309,11 +309,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -350,11 +350,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           Profile
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>
@@ -391,11 +391,11 @@ const FriendList = () => {
 
                       <Stack direction="column" spacing={1}>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="secondary">
-                          <AccountCircleOutlinedIcon style={{ marginRight: "0.3rem" }} />
+                          <AccountCircleOutlinedIcon style={{ marginRight: "0.12rem" }} />
                           View
                         </Button>
                         <Button variant="contained" style={{ textTransform: "capitalize" }} color="error">
-                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.3rem" }} /> {" "}
+                          <PersonRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} /> {" "}
                           Unfriend
                         </Button>
                       </Stack>

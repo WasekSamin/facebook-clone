@@ -1,0 +1,16 @@
+#profile__mainDiv {
+    position: relative;
+    top: 6rem;
+}
+
+@media (max-width: 767px) {
+    #profile__postGridDiv > div:first-child {
+        max-width: 100%;
+        flex-basis: 100%;
+    }
+
+    #profile__postGridDiv > div:last-child {
+        max-width: 100%;
+        flex-basis: 100%;
+    }
+}

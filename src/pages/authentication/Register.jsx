@@ -194,13 +194,14 @@ const Register = () => {
                     <Typography
                       variant="p"
                       style={{
-                        fontSize: "0.75rem",
+                        fontSize: "0.83rem",
                         marginTop: "0.5rem",
                         color: "rgb(100 116 139)",
                       }}
                     >
                       Already have an account!{" "}
                       <Link
+                        className="register__alreadyHaveAccount"
                         to="/login/"
                         style={{ color: `${colorTheme.palette.primary.main}` }}
                       >
