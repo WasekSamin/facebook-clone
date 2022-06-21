@@ -1,0 +1,63 @@
+#edit__profilePicModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 5;
+}
+
+#edit__profilePicModalMotionDiv {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 6;
+}
+
+#edit__profilePicModal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: auto;
+    background-color: white;
+    border-radius: 10px;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+}
+
+#profile__picUploadLabel {
+    padding: 3rem;
+    border: 1px dashed var(--border-primary);
+    background-color: var(--bg-primary);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#edit__profilePicPreviewMainDiv {
+    position: relative;
+    border-radius: 10px;
+    width: 80px;
+    height: 80px;
+}
+
+#close__profilePicPreviewDiv {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.edit__modalProfilePicPreview {
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}

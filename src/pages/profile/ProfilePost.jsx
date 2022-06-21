@@ -54,65 +54,82 @@ const ProfilePost = () => {
     };
   }, []);
 
+  const postCommentModal = () => {
+    return (
+      <>
+        {/* Post comment modal starts */}
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {showPostCommentModal !== null && (
+            <motion.div
+              id="show__postCommentModal"
+              initial={{
+                opacity: 0,
+                y: "120%",
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: "120%",
+              }}
+            >
+              <PostCommentModal
+                showPostCommentModal={showPostCommentModal}
+                setShowPostCommentModal={setShowPostCommentModal}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Post comment modal ends */}
+      </>
+    );
+  };
+
+  const postLikeModal = () => {
+    return (
+      <>
+        {/* Post like modal starts */}
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {showPostLikeModal !== null && (
+            <motion.div
+              id="show__postLikeModal"
+              initial={{
+                opacity: 0,
+                y: "120%",
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: "120%",
+              }}
+            >
+              <PostLikeModal
+                showPostLikeModal={showPostLikeModal}
+                setShowPostLikeModal={setShowPostLikeModal}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Post like modal ends */}
+      </>
+    );
+  };
+
   return (
     <div>
-      {/* Post comment modal starts */}
       {(showPostCommentModal !== null || showPostLikeModal !== null) && (
         <div id="post__commentModalOverlay"></div>
       )}
 
-      <AnimatePresence initial={false} exitBeforeEnter={true}>
-        {showPostCommentModal !== null && (
-          <motion.div
-            id="show__postCommentModal"
-            initial={{
-              opacity: 0,
-              y: "120%",
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: "120%",
-            }}
-          >
-            <PostCommentModal
-              showPostCommentModal={showPostCommentModal}
-              setShowPostCommentModal={setShowPostCommentModal}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Post comment modal ends */}
-
-      {/* Post like modal starts */}
-      <AnimatePresence initial={false} exitBeforeEnter={true}>
-        {showPostLikeModal !== null && (
-          <motion.div
-            id="show__postLikeModal"
-            initial={{
-              opacity: 0,
-              y: "120%",
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: "120%",
-            }}
-          >
-            <PostLikeModal
-              showPostLikeModal={showPostLikeModal}
-              setShowPostLikeModal={setShowPostLikeModal}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Post like modal ends */}
+      {/* Post comment modal */}
+      {postCommentModal()}
+      {/* Post like modal */}
+      {postLikeModal()}
 
       <CreatePost />
 

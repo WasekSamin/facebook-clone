@@ -35,7 +35,7 @@ const PostLikeModal = ({ showPostLikeModal, setShowPostLikeModal }) => {
             alignItems="center"
           >
             <Typography variant="h6">
-              Total Likes{" "}
+              Total Hearts{" "}
               <span style={{ color: "var(--slate-500)" }}>(1.2k)</span>
             </Typography>
             <IconButton

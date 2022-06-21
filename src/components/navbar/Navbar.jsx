@@ -1,4 +1,9 @@
-import { Button, Divider, IconButton, Typography } from "@mui/material";
+import {
+  Button,
+  Divider,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import { Container } from "@mui/system";
 import React, { useState, useRef, useEffect } from "react";
 import { colorTheme } from "../colorTheme/ColorTheme";
@@ -16,7 +21,8 @@ import Badge from "@mui/material/Badge";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import CreatePostModal from "../post/CreatePostModal";
 
 
 const Navbar = () => {
@@ -24,8 +30,9 @@ const Navbar = () => {
   const [navbarSearchFieldText, setNavbarSearchFieldText] = useState("");
   const mobileSidebarRef = useRef(null);
   const overlayRef = useRef(null);
-  const mobileSearchInputRef = useRef(null);
-  const [mobileSearchPeopleModal, setMobileSearchPeopleModal] = useState(false);
+  const searchInputRef = useRef(null);
+  const [showNavbarSearchModal, setShowNavbarSearchModal] = useState(false);
+  const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
 
   const closeMobileSidebar = (event) => {
     if (
@@ -52,503 +59,533 @@ const Navbar = () => {
     };
   }, []);
 
-  const showMobileSearchModal = () => {
-    setMobileSearchPeopleModal(true);
-  }
-
   // Focus on the mobile search people modal input field
   useEffect(() => {
-    if (mobileSearchPeopleModal && mobileSearchInputRef.current !== null) {
-      mobileSearchInputRef.current.focus();
+    if (showNavbarSearchModal && searchInputRef.current !== null) {
+      searchInputRef.current.focus();
     }
-  }, [mobileSearchPeopleModal])
+  }, [showNavbarSearchModal]);
 
-  return (
-    <div style={{ backgroundColor: "#fff" }} className="navbar__mainDiv">
-      <div ref={overlayRef} id="overlay"></div>
-      <Container maxWidth="lg">
-        <div id="navbar">
-          <Stack className="navbar__logoDiv" direction="row" alignItems="center" spacing={3}>
-            <IconButton
-              onClick={showMobileSidebar}
-              color="secondary"
-              id="navbar__hamburger"
+  const createPostModal = () => {
+    return (
+      <>
+        {openCreatePostModal && <div id="create__postOverlay"></div>}
+
+        {/* Create post modal */}
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {openCreatePostModal && (
+            <motion.div
+              initial={{
+                scale: 0,
+                opacity: 0,
+              }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+              }}
+              exit={{
+                scale: 0,
+                opacity: 0,
+              }}
+              className="createPostModalMainDiv"
             >
-              <MenuIcon />
-            </IconButton>
-            <Link to="/" style={{ textDecoration: "none" }}>
-              <Typography
-                variant="h5"
+              <CreatePostModal
+                openCreatePostModal={openCreatePostModal}
+                setOpenCreatePostModal={setOpenCreatePostModal}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  };
+
+  const searchPeopleModal = () => {
+    return (
+      <>
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {showNavbarSearchModal && (
+            <motion.div
+              initial={{
+                scale: 0,
+                opacity: 0,
+              }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+              }}
+              exit={{
+                scale: 0,
+                opacity: 0,
+              }}
+              id="search__peopleModal"
+            >
+              <div
+                className="search__peopleModalFirstDiv"
                 style={{
-                  fontWeight: 600,
-                  fontStyle: "italic",
-                  color: `${colorTheme.palette.primary.main}`,
+                  backgroundColor: `${colorTheme.palette.primary.main}`,
                 }}
               >
-                Social App
-              </Typography>
-            </Link>
-          </Stack>
-
-          <div className="navbar__rightDiv">
-            <div className="mobile__searchDiv">
-              <IconButton onClick={showMobileSearchModal}>
-                <SearchIcon style={{ color: "var(--slate-500)" }} />
-              </IconButton>
-
-              <AnimatePresence initial={false} exitBeforeEnter={true}>
-                {mobileSearchPeopleModal && (
-                  <motion.div
-                    initial={{
-                      scale: 0,
-                      opacity: 0,
-                    }}
-                    animate={{
-                      scale: 1,
-                      opacity: 1,
-                    }}
-                    exit={{
-                      scale: 0,
-                      opacity: 0,
-                    }}
-                    id="mobile__searchModal"
-                  >
-                    <div
-                      className="mobile__searchModalFirstDiv"
-                      style={{
-                        backgroundColor: `${colorTheme.palette.primary.main}`,
-                      }}
-                    >
-                      <Typography variant="h5" style={{ fontWeight: 500 }}>
-                        Search People
-                      </Typography>
-                      <IconButton onClick={() => setMobileSearchPeopleModal(false)}>
-                        <CloseIcon style={{ color: "white" }} />
-                      </IconButton>
-                    </div>
-                    <div className="mobile__searchModalLastDiv">
-                      <div>
-                        <SearchIcon style={{ color: "var(--slate-500)" }} />
-                        <input
-                          ref={mobileSearchInputRef}
-                          onChange={(e) =>
-                            setNavbarSearchFieldText(e.target.value)
-                          }
-                          value={navbarSearchFieldText}
-                          id="mobile__navbarSearch"
-                          type="text"
-                          placeholder="Search people..."
+                <Typography variant="h5" style={{ fontWeight: 500 }}>
+                  Search People
+                </Typography>
+                <IconButton onClick={() => setShowNavbarSearchModal(false)}>
+                  <CloseIcon style={{ color: "white" }} />
+                </IconButton>
+              </div>
+              <div className="search__peopleModalLastDiv">
+                <div>
+                  <SearchIcon style={{ color: "var(--slate-500)" }} />
+                  <input
+                    ref={searchInputRef}
+                    onChange={(e) => setNavbarSearchFieldText(e.target.value)}
+                    value={navbarSearchFieldText}
+                    id="navbar__search"
+                    type="text"
+                    placeholder="Search people..."
+                  />
+                  <AnimatePresence intial={false} exitBeforeEnter={true}>
+                    {navbarSearchFieldText.length > 0 && (
+                      <motion.div
+                        initial={{
+                          x: "150%",
+                          opacity: 0,
+                        }}
+                        animate={{
+                          x: 0,
+                          opacity: 1,
+                        }}
+                        exit={{
+                          x: "150%",
+                          opacity: 0,
+                        }}
+                        className="div"
+                        style={{ display: "flex" }}
+                      >
+                        <ClearIcon
+                          onClick={() => setNavbarSearchFieldText("")}
+                          ref={clearNavbarSearchFieldBtnRef}
+                          style={{ color: "var(--slate-500)" }}
+                          className="clear__navbarSearchField"
                         />
-                        <AnimatePresence intial={false} exitBeforeEnter={true}>
-                          {navbarSearchFieldText.length > 0 && (
-                            <motion.div
-                              initial={{
-                                x: "150%",
-                                opacity: 0,
-                              }}
-                              animate={{
-                                x: 0,
-                                opacity: 1,
-                              }}
-                              exit={{
-                                x: "150%",
-                                opacity: 0,
-                              }}
-                              className="div"
-                              style={{ display: "flex" }}
-                            >
-                              <ClearIcon
-                                onClick={() => setNavbarSearchFieldText("")}
-                                ref={clearNavbarSearchFieldBtnRef}
-                                style={{ color: "var(--slate-500)" }}
-                                className="clear__navbarSearchField"
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-                      <div className="mobile__navbarSearchPeopleList">
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Wasek Samin
-                            </Typography>
-                          </Button>
-                        </Link>
-                        <Link to="#">
-                          <Button color="secondary">
-                            <Avatar alt="Wasek Samin" src={profileImg} />
-                            <Typography
-                              variant="p"
-                              className="mobile__navbarSearchPeopleUsernameText"
-                              style={{
-                                fontWeight: "600",
-                                color: "black",
-                                opacity: 0.8,
-                              }}
-                            >
-                              Last person
-                            </Typography>
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <div className="navbar__searchDiv">
-              <SearchIcon />
-              <input
-                onChange={(e) => setNavbarSearchFieldText(e.target.value)}
-                value={navbarSearchFieldText}
-                type="text"
-                placeholder="Search for people..."
-              />
-              <AnimatePresence intial={false} exitBeforeEnter={true}>
-                {navbarSearchFieldText.length > 0 && (
-                  <motion.div
-                    initial={{
-                      x: "150%",
-                      opacity: 0,
-                    }}
-                    animate={{
-                      x: 0,
-                      opacity: 1,
-                    }}
-                    exit={{
-                      x: "150%",
-                      opacity: 0,
-                    }}
-                    className="div"
-                    style={{ display: "flex" }}
-                  >
-                    <ClearIcon
-                      onClick={() => setNavbarSearchFieldText("")}
-                      ref={clearNavbarSearchFieldBtnRef}
-                      className="clear__navbarSearchField"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                <div className="navbar__searchPeopleList">
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Wasek Samin
+                      </Typography>
+                    </Button>
+                  </Link>
+                  <Link to="#">
+                    <Button color="secondary">
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography
+                        variant="p"
+                        className="navbar__searchPeopleUsernameText"
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          opacity: 0.8,
+                        }}
+                      >
+                        Last person
+                      </Typography>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
 
+  return (
+    <>
+      {createPostModal()}
+      
+      {searchPeopleModal()}
+
+      <div style={{ backgroundColor: "#fff" }} className="navbar__mainDiv">
+        <div ref={overlayRef} id="overlay"></div>
+        <Container maxWidth="lg">
+          <div id="navbar">
             <Stack
-              ref={mobileSidebarRef}
-              id="navbar__rightContent"
+              className="navbar__logoDiv"
               direction="row"
+              alignItems="center"
               spacing={3}
             >
-              <div>
-                <Divider id="navbar__mobileDivider" />
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  style={{ borderRadius: "9999px", width: "100%" }}
+              <IconButton
+                onClick={showMobileSidebar}
+                color="secondary"
+                id="navbar__hamburger"
+              >
+                <MenuIcon />
+              </IconButton>
+              <Link to="/" style={{ textDecoration: "none" }}>
+                <Typography
+                  variant="h5"
+                  style={{
+                    fontWeight: 600,
+                    fontStyle: "italic",
+                    color: `${colorTheme.palette.primary.main}`,
+                  }}
                 >
-                  Create
-                </Button>
+                  Social App
+                </Typography>
+              </Link>
+            </Stack>
+
+            <div className="navbar__rightDiv">
+              <div className="mobile__searchDiv">
+                <IconButton onClick={() => setShowNavbarSearchModal(true)}>
+                  <SearchIcon style={{ color: "var(--slate-500)" }} />
+                </IconButton>
               </div>
-              <Stack id="navbar__mobileSidebar" direction="column" spacing={3}>
-                <Link to="/profile/" id="navbar__profileAvatar">
-                  <Stack direction="column" spacing={3}>
-                    <Avatar alt="Wasek Samin" src={profileImg} />
-                    <Typography id="navbar__profileUsername" variant="p">
-                      Wasek Samin
-                    </Typography>
-                  </Stack>
-                </Link>
+              <div className="navbar__searchDiv">
+                <SearchIcon />
+                <input
+                  onFocus={() => setShowNavbarSearchModal(true)}
+                  type="text"
+                  placeholder="Search for people..."
+                />
+              </div>
+
+              <Stack
+                ref={mobileSidebarRef}
+                id="navbar__rightContent"
+                direction="row"
+                spacing={3}
+              >
+                <div>
+                  <Divider id="navbar__mobileDivider" />
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    style={{ borderRadius: "9999px", width: "100%" }}
+                    onClick={() => setOpenCreatePostModal(true)}
+                  >
+                    Create
+                  </Button>
+                </div>
                 <Stack
-                  id="navbar__mobileExtraLinks"
+                  id="navbar__mobileSidebar"
                   direction="column"
                   spacing={3}
                 >
-                  <Divider style={{ marginBottom: "1rem" }} />
-                  <Link to="/chat/">
-                    <Button
-                      color="secondary"
-                      style={{ width: "100%", justifyContent: "flex-start" }}
-                    >
-                      <Stack direction="row" spacing={3}>
-                        <Badge
-                          style={{ marginRight: "1rem" }}
-                          color="secondary"
-                          badgeContent={10}
-                          max={9}
-                        >
-                          <ChatBubbleOutlineIcon />
-                        </Badge>
-                        Messages
-                      </Stack>
-                    </Button>
+                  <Link to="/profile/" id="navbar__profileAvatar">
+                    <Stack direction="column" spacing={3}>
+                      <Avatar alt="Wasek Samin" src={profileImg} />
+                      <Typography id="navbar__profileUsername" variant="p">
+                        Wasek Samin
+                      </Typography>
+                    </Stack>
                   </Link>
-                  <Link to="/notifications/">
+                  <Stack
+                    id="navbar__mobileExtraLinks"
+                    direction="column"
+                    spacing={3}
+                  >
+                    <Divider style={{ marginBottom: "1rem" }} />
+                    <Link to="/chat/">
+                      <Button
+                        color="secondary"
+                        style={{ width: "100%", justifyContent: "flex-start" }}
+                      >
+                        <Stack direction="row" spacing={3}>
+                          <Badge
+                            style={{ marginRight: "1rem" }}
+                            color="secondary"
+                            badgeContent={10}
+                            max={9}
+                          >
+                            <ChatBubbleOutlineIcon />
+                          </Badge>
+                          Messages
+                        </Stack>
+                      </Button>
+                    </Link>
+                    <Link to="/notifications/">
+                      <Button
+                        color="secondary"
+                        style={{ width: "100%", justifyContent: "flex-start" }}
+                      >
+                        <Stack direction="row" spacing={3}>
+                          <Badge
+                            style={{ marginRight: "1rem" }}
+                            color="secondary"
+                            badgeContent={10}
+                            max={9}
+                          >
+                            <NotificationsNoneIcon />
+                          </Badge>
+                          Notifications
+                        </Stack>
+                      </Button>
+                    </Link>
+                    <Link to="/friend-requests/">
+                      <Button
+                        color="secondary"
+                        style={{ width: "100%", justifyContent: "flex-start" }}
+                      >
+                        <Stack direction="row" spacing={3}>
+                          <Badge
+                            style={{ marginRight: "1rem" }}
+                            color="secondary"
+                            badgeContent={10}
+                            max={9}
+                          >
+                            <PeopleOutlineIcon />
+                          </Badge>
+                          Friend Requests
+                        </Stack>
+                      </Button>
+                    </Link>
                     <Button
-                      color="secondary"
-                      style={{ width: "100%", justifyContent: "flex-start" }}
+                      id="mobile__navbarLogoutBtn"
+                      color="error"
+                      style={{
+                        justifyContent: "flex-start",
+                        textTransform: "capitalize",
+                      }}
                     >
-                      <Stack direction="row" spacing={3}>
-                        <Badge
-                          style={{ marginRight: "1rem" }}
-                          color="secondary"
-                          badgeContent={10}
-                          max={9}
-                        >
-                          <NotificationsNoneIcon />
-                        </Badge>
-                        Notifications
-                      </Stack>
+                      <ExitToAppIcon style={{ marginRight: "1rem" }} /> Logout
                     </Button>
-                  </Link>
-                  <Link to="/friend-requests/">
-                    <Button
-                      color="secondary"
-                      style={{ width: "100%", justifyContent: "flex-start" }}
-                    >
-                      <Stack direction="row" spacing={3}>
-                        <Badge
-                          style={{ marginRight: "1rem" }}
-                          color="secondary"
-                          badgeContent={10}
-                          max={9}
-                        >
-                          <PeopleOutlineIcon />
-                        </Badge>
-                        Friend Requests
-                      </Stack>
-                    </Button>
-                  </Link>
-                  <Button id="mobile__navbarLogoutBtn" color="error" style={{ justifyContent: "flex-start", textTransform: "capitalize" }}>
-                    <ExitToAppIcon style={{ marginRight: "1rem" }} /> Logout
-                  </Button>
+                  </Stack>
                 </Stack>
+                <IconButton id="navbar__logoutBtn" color="error">
+                  <ExitToAppIcon />
+                </IconButton>
               </Stack>
-              <IconButton id="navbar__logoutBtn" color="error">
-                <ExitToAppIcon />
-              </IconButton>
-            </Stack>
+            </div>
           </div>
-        </div>
-      </Container>
-    </div>
+        </Container>
+      </div>
+    </>
   );
 };
 

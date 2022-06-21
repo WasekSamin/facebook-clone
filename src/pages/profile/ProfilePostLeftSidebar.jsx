@@ -15,45 +15,88 @@ import profileImg from "../../dummy/images/portImg.png";
 import dummy1 from "../../dummy/images/img1.jpg";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
+import EditProfileModal from "../../components/profile/EditProfileModal";
 
 const ProfilePostLeftSidebar = () => {
   const [profileViewedImg, setProfileViewedImg] = useState(null);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+
+  const editProfileDetailsModal = () => {
+    return (
+      <>
+        {showEditProfileModal && <div id="editProfileModalOverlay"></div>}
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {showEditProfileModal && (
+            <motion.div
+              id="edit__profileModalMotionDiv"
+              initial={{
+                y: "120%",
+                opacity: 0,
+              }}
+              animate={{
+                y: 0,
+                opacity: 1,
+              }}
+              exit={{
+                y: "120%",
+                opacity: 0,
+              }}
+            >
+              <EditProfileModal
+                showEditProfileModal={showEditProfileModal}
+                setShowEditProfileModal={setShowEditProfileModal}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  };
+
+  const profileImageViewModal = () => {
+    return (
+      <>
+        {/* Profile image viewed modal starts */}
+        {profileViewedImg !== null && (
+          <div id="profile__viewImgModalOverlay"></div>
+        )}
+
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {profileViewedImg !== null && (
+            <motion.div
+              id="profile__viewImageModalMainDiv"
+              initial={{
+                opacity: 0,
+                y: "120%",
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: "120%",
+              }}
+            >
+              <ProfileImageViewModal
+                profileViewedImg={profileViewedImg}
+                setProfileViewedImg={setProfileViewedImg}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Profile image viewed modal ends */}
+      </>
+    );
+  };
 
   return (
     <div>
-      {/* Profile image viewed modal starts */}
-      {profileViewedImg !== null && (
-        <div id="profile__viewImgModalOverlay"></div>
-      )}
+      {/* Profile image viewed modal */}
+      {profileImageViewModal()}
 
-      <AnimatePresence initial={false} exitBeforeEnter={true}>
-        {profileViewedImg !== null && (
-          <motion.div
-            id="profile__viewImageModalMotionDiv"
-            initial={{
-            //   y: "120%",
-            scale: 0,
-              opacity: 0,
-            }}
-            animate={{
-            //   y: 0,
-            scale: 1,
-              opacity: 1,
-            }}
-            exit={{
-            //   y: "120%",
-            scale: 0,
-              opacity: 0,
-            }}
-          >
-            <ProfileImageViewModal
-              profileViewedImg={profileViewedImg}
-              setProfileViewedImg={setProfileViewedImg}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Profile image viewed modal ends */}
+      {/* Edit profile details modal */}
+      {editProfileDetailsModal()}
 
       <Stack direction="column" spacing={2}>
         <Stack
@@ -146,6 +189,7 @@ const ProfilePostLeftSidebar = () => {
             variant="contained"
             color="success"
             style={{ marginTop: "1.5rem" }}
+            onClick={() => setShowEditProfileModal(true)}
           >
             <ModeEditOutlineOutlinedIcon style={{ marginRight: "0.12rem" }} />{" "}
             Edit Details

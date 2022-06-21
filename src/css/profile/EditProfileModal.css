@@ -1,0 +1,69 @@
+#editProfileModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+#edit__profileModalMotionDiv {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 6;
+}
+
+#edit__profileModalDiv {
+  position: absolute;
+  width: 50%;
+  max-width: 1000px;
+  height: auto;
+  max-height: 80vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 1rem 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 10px;
+  padding: 10px;
+  z-index: 6;
+}
+
+#edit__profileModalDiv::-webkit-scrollbar {
+  width: 6px;
+}
+
+#edit__profileModalDiv::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+}
+
+#edit__profileModalDiv::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  border-radius: 9999px;
+}
+
+@media (max-width: 991px) {
+  #edit__profileModalDiv {
+    width: 70%;
+  }
+}
+
+@media (max-width: 767px) {
+  #edit__profileModalDiv {
+    width: 80%;
+  }
+}
+
+@media (max-width: 599px) {
+  #edit__profileModalDiv {
+    width: 95%;
+  }
+}

@@ -9,6 +9,7 @@
 
 #post__likeModalDiv {
   width: 50%;
+  max-width: 1000px;
   height: 90%;
   position: absolute;
   background-color: white;

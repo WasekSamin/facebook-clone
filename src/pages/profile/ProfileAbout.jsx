@@ -5,12 +5,13 @@ import "../../css/profile/ProfileAbout.css";
 import ProfilePages from "./ProfilePages";
 import ProfileTop from "./ProfileTop";
 import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
+import { Link } from "react-router-dom";
+import { colorTheme } from "../../components/colorTheme/ColorTheme";
 
 const ProfileAbout = () => {
   const [workStatus, setWorkStatus] = useState(null);
@@ -52,14 +53,16 @@ const ProfileAbout = () => {
                   maxRows={4}
                 />
                 <FormControl>
-                  <FormLabel id="profile__workingStatus">Studying or Working?</FormLabel>
+                  <FormLabel id="profile__workingStatus">
+                    Studying or Working?
+                  </FormLabel>
                   <RadioGroup
                     row
                     aria-labelledby="profile__gender"
                     defaultValue="studying"
                     name="radio-buttons-group"
                     value={workStatus}
-                    onChange={e => setWorkStatus(e.target.value)}
+                    onChange={(e) => setWorkStatus(e.target.value)}
                   >
                     <FormControlLabel
                       value="studying"
@@ -84,16 +87,14 @@ const ProfileAbout = () => {
                   </RadioGroup>
                 </FormControl>
 
-                {(workStatus === "studying" ||
-                  workStatus === "both") && (
+                {(workStatus === "studying" || workStatus === "both") && (
                   <TextField
                     id="studying_place"
                     label="Studying At..."
                     variant="outlined"
                   />
                 )}
-                {(workStatus === "working" ||
-                  workStatus === "both") && (
+                {(workStatus === "working" || workStatus === "both") && (
                   <TextField
                     id="working__place"
                     label="Working At..."
@@ -115,7 +116,7 @@ const ProfileAbout = () => {
                     defaultValue="male"
                     name="radio-buttons-group"
                     value={gender}
-                    onChange={e => setGender(e.target.value)}
+                    onChange={(e) => setGender(e.target.value)}
                   >
                     <FormControlLabel
                       value="male"
@@ -145,7 +146,7 @@ const ProfileAbout = () => {
                     defaultValue="single"
                     name="radio-buttons-group"
                     value={relationStatus}
-                    onChange={e => setRelationStatus(e.target.value)}
+                    onChange={(e) => setRelationStatus(e.target.value)}
                   >
                     <FormControlLabel
                       value="single"
@@ -160,7 +161,17 @@ const ProfileAbout = () => {
                   </RadioGroup>
                 </FormControl>
 
-                <Button type="submit" variant="contained" color="secondary">Update Profile</Button>
+                <Button type="submit" variant="contained" color="secondary">
+                  Update Profile
+                </Button>
+
+                <Typography variant="p" style={{ textAlign: "center" }}>
+                  Want to change your password?{" "}
+                  <Link style={{ color: colorTheme.palette.primary.main }} className="profile__aboutEditPasswordLink" to="/edit-password/">
+                    Edit Password
+                  </Link>
+                  .
+                </Typography>
               </Stack>
             </form>
           </div>

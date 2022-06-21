@@ -321,12 +321,13 @@ const PostCommentModal = ({
               id="post__commentModalCreateCommentDiv"
               spacing={1}
             >
-              <input
+              <textarea
                 value={postCommentText}
                 onChange={(e) => setPostCommentText(e.target.value)}
                 type="text"
                 placeholder="Post your comment..."
-              />
+                rows={1}
+              ></textarea>
               <IconButton
                 disabled={postCommentText.length > 0 ? false : true}
                 color="secondary"

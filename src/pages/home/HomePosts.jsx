@@ -54,65 +54,82 @@ const HomePosts = () => {
     };
   }, []);
 
+  const postCommentModal = () => {
+    return (
+      <>
+        {/* Post comment modal starts */}
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {showPostCommentModal !== null && (
+            <motion.div
+              id="show__postCommentModal"
+              initial={{
+                opacity: 0,
+                y: "120%",
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: "120%",
+              }}
+            >
+              <PostCommentModal
+                showPostCommentModal={showPostCommentModal}
+                setShowPostCommentModal={setShowPostCommentModal}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Post comment modal ends */}
+      </>
+    );
+  };
+
+  const postLikeModal = () => {
+    return (
+      <>
+        {/* Post like modal starts */}
+        <AnimatePresence initial={false} exitBeforeEnter={true}>
+          {showPostLikeModal !== null && (
+            <motion.div
+              id="show__postLikeModal"
+              initial={{
+                opacity: 0,
+                y: "120%",
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: "120%",
+              }}
+            >
+              <PostLikeModal
+                showPostLikeModal={showPostLikeModal}
+                setShowPostLikeModal={setShowPostLikeModal}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Post like modal ends */}
+      </>
+    );
+  };
+
   return (
     <div>
-      {/* Post comment modal starts */}
       {(showPostCommentModal !== null || showPostLikeModal !== null) && (
         <div id="post__commentModalOverlay"></div>
       )}
 
-      <AnimatePresence initial={false} exitBeforeEnter={true}>
-        {showPostCommentModal !== null && (
-          <motion.div
-            id="show__postCommentModal"
-            initial={{
-              opacity: 0,
-              y: "120%",
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: "120%",
-            }}
-          >
-            <PostCommentModal
-              showPostCommentModal={showPostCommentModal}
-              setShowPostCommentModal={setShowPostCommentModal}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Post comment modal ends */}
-
-      {/* Post like modal starts */}
-      <AnimatePresence initial={false} exitBeforeEnter={true}>
-        {showPostLikeModal !== null && (
-          <motion.div
-            id="show__postLikeModal"
-            initial={{
-              opacity: 0,
-              y: "120%",
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: "120%",
-            }}
-          >
-            <PostLikeModal
-              showPostLikeModal={showPostLikeModal}
-              setShowPostLikeModal={setShowPostLikeModal}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Post like modal ends */}
+      {/* Post comment modal */}
+      {postCommentModal()}
+      {/* Post like modal */}
+      {postLikeModal()}
 
       <div className="post__div">
         <div className="post__headerContent">
@@ -233,14 +250,22 @@ const HomePosts = () => {
           alignItems="center"
           justifyContent="space-between"
         >
-          <Typography className="post__totalLikesCouter" variant="p" onClick={() => setShowPostLikeModal(1)}>1.2k hearts</Typography>
-          <Typography className="post__totalCommentsCouter" variant="p" onClick={() => setShowPostCommentModal(1)}>
+          <Typography
+            className="post__totalLikesCouter"
+            variant="p"
+            onClick={() => setShowPostLikeModal(1)}
+          >
+            1.2k hearts
+          </Typography>
+          <Typography
+            className="post__totalCommentsCouter"
+            variant="p"
+            onClick={() => setShowPostCommentModal(1)}
+          >
             1.2k comments
           </Typography>
         </Stack>
       </div>
-
-      
     </div>
   );
 };

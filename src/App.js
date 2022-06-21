@@ -11,6 +11,9 @@ import FriendList from "./pages/friends/FriendList";
 import Profile from "./pages/profile/Profile";
 import ProfileAbout from "./pages/profile/ProfileAbout";
 import ProfilePhotos from "./pages/profile/ProfilePhotos";
+import EditPassword from "./pages/authentication/EditPassword";
+import ChangePasswordText from "./pages/authentication/ChangePasswordText";
+import ActiveAccount from "./pages/authentication/ActiveAccount";
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
         <Route path="/profile/" element={<Profile />} />
         <Route path="/profile/about/" element={<ProfileAbout />} />
         <Route path="/profile/photos/" element={<ProfilePhotos />} />
+        <Route path="/edit-password/" element={<ChangePasswordText />} />
+        <Route path="/active-account/" element={<ActiveAccount />} />
+        <Route path="/edit-password/:token/" element={<EditPassword />} />
       </Routes>
     </div>
   );

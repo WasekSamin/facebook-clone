@@ -18,4 +18,5 @@
     outline: none;
     border: none;
     background-color: var(--bg-primary);
+    resize: none;
 }

@@ -19,6 +19,7 @@
 
 #post__commentModalDiv {
   width: 70%;
+  max-width: 1000px;
   height: 90%;
   position: absolute;
   background-color: white;
@@ -59,13 +60,14 @@
   text-overflow: ellipsis;
 }
 
-#post__commentModalCreateCommentDiv > input {
+#post__commentModalCreateCommentDiv > textarea {
   flex: 1;
   padding: 10px;
   border-radius: 9999px;
   outline: none;
   border: none;
   background-color: var(--bg-primary);
+  resize: none;
 }
 
 @media (max-width: 767px) {

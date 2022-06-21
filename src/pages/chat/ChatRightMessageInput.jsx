@@ -15,13 +15,14 @@ const ChatRightMessageInput = () => {
           spacing={2}
           alignItems="center"
         >
-          <input
+          <textarea
             value={chatInputText}
             onChange={(e) => setChatInputText(e.target.value)}
             id="chat__rightMessageInputField"
             type="text"
             placeholder="Type your message..."
-          />
+            rows={1}
+          ></textarea>
           <IconButton
             disabled={chatInputText.length > 0 ? false : true}
             color="secondary"

@@ -6,7 +6,6 @@ import "../../css/profile/Profile.css";
 import ProfilePages from "./ProfilePages";
 import ProfilePostLeftSidebar from "./ProfilePostLeftSidebar";
 import ProfilePost from "./ProfilePost";
-import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
 
 const Profile = () => {
   return (
