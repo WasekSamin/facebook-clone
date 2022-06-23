@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import "../../css/authentication/Login.css";
 import Grid from "@mui/material/Grid";
@@ -7,14 +7,30 @@ import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Divider from "@mui/material/Divider";
-import { Link } from "react-router-dom";
-import LoadingButton from '@mui/lab/LoadingButton';
+import { Link, useNavigate } from "react-router-dom";
+import LoadingButton from "@mui/lab/LoadingButton";
+import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
+import { AccountStore, APIStore, TokenStore } from "../../components/store/Store";
+import Cookies from "js-cookie";
 
 const Login = () => {
+  let navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
   const [errorMsgPosition, setErrorMsgPosition] = useState(0);
+  const token = TokenStore((state) => state.token);
+  const updateToken = TokenStore((state) => state.updateToken);
+  const MYAPI = APIStore((state) => state.MYAPI);
+  const [isLoading, setIsLoading] = useState(false);
+  const isUserLoggedIn = AccountStore(state => state.isUserLoggedIn);
+
+  useEffect(() => {
+    if (isUserLoggedIn) {
+      navigate("/");
+    }
+  }, [isUserLoggedIn]);
 
   function validateEmail(email) {
     var re = /\S+@\S+\.\S+/;
@@ -24,14 +40,15 @@ const Login = () => {
   const showErrorMsg = (msg, errorPostion) => {
     setErrorMsg(msg);
     setErrorMsgPosition(errorPostion);
+    setIsLoading(false);
   };
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    console.log("HEY");
 
     setErrorMsg(null);
     setErrorMsgPosition(0);
+    setIsLoading(true);
 
     if (!email || email.trim() === "") {
       showErrorMsg("Email field is required!", 1);
@@ -55,13 +72,39 @@ const Login = () => {
     let formData = new FormData();
     formData.append("email", info.email);
     formData.append("password", info.password);
+    formData.append("register", false);
 
-    // await axios.post()
+    await axios
+      .post(`${MYAPI}/authentication/account-list/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: token,
+        },
+      })
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.error && res.data.account_not_exist) {
+          toast.error("Invalid account credential!");
+        } else if (
+          res.data.error ||
+          (res.data.login_failed && res.data.invalid_token)
+        ) {
+          toast.error("Something went wrong!");
+        } else if (!res.data.error && res.data.login_success) {
+          updateToken(res.data.token);
+          Cookies.set("SID", res.data.token);
+          setIsLoading(false);
+          window.location.href = "/";
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => console.error(err));
   }
 
   return (
     <div>
       <Container maxWidth="lg">
+        <Toaster position="bottom-right" reverseOrder={false} />
         <div className="login__grid">
           <Grid container spacing={2}>
             <Grid item xs={7}>
@@ -126,7 +169,7 @@ const Login = () => {
                   </div>
                   <div>
                     <LoadingButton
-                      loading={false}
+                      loading={isLoading}
                       loadingPosition="end"
                       type="submit"
                       id="sign__inBtn"
@@ -137,9 +180,7 @@ const Login = () => {
                     </LoadingButton>
                   </div>
                   <div className="login__forgotBtn">
-                    <Link
-                      to="/forgot-password/"
-                    >
+                    <Link to="/forgot-password/">
                       <Button
                         color="secondary"
                         style={{
@@ -158,7 +199,10 @@ const Login = () => {
                 <div id="navigate__reigsterBtn">
                   <Link to="/register/" style={{ textDecoration: "none" }}>
                     <Button
-                      style={{ backgroundColor: `${colorTheme.palette.blue}`, textTransform: "capitalize" }}
+                      style={{
+                        backgroundColor: `${colorTheme.palette.blue}`,
+                        textTransform: "capitalize",
+                      }}
                       variant="contained"
                     >
                       Create New Account

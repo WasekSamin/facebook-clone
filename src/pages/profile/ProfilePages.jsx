@@ -7,16 +7,16 @@ const ProfilePages = ({currentProfilePage}) => {
     <div style={{ margin: "2rem 0" }}>
         <Stack style={{ padding: "1rem 0.5rem", backgroundColor: "white", borderRadius: "10px" }} direction="row" alignItems="center" justifyContent="center">
             <Stack direction="row" alignItems="center" spacing={1} style={{ flexWrap: "wrap" }}>
-                <Link to="/profile/">
+                <Link to="/profile/" style={{ color: "black" }}>
                     <Button variant={currentProfilePage === "profile_post" ? "contained" : ""} color="secondary">Post</Button>
                 </Link>
-                <Link to="/profile/about/">
+                <Link to="/profile/about/" style={{ color: "black" }}>
                     <Button color="secondary" variant={currentProfilePage === "profile_about" ? "contained" : ""}>About</Button>
                 </Link>
-                <Link to="/profile/photos/">
+                <Link to="/profile/photos/" style={{ color: "black" }}>
                     <Button color="secondary" variant={currentProfilePage === "profile_photos" ? "contained" : ""}>Photos</Button>
                 </Link>
-                <Link to="/friend-list/">
+                <Link to="/friend-list/" style={{ color: "black" }}>
                     <Button color="secondary" variant={currentProfilePage === "profile_friends" ? "contained" : ""}>Friends</Button>
                 </Link>
             </Stack>

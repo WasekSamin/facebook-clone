@@ -1,20 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import "../../css/authentication/Login.css";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import TextField from "@mui/material/TextField";
-import { Link } from "react-router-dom";
-import LoadingButton from '@mui/lab/LoadingButton';
+import { Link, useNavigate } from "react-router-dom";
+import LoadingButton from "@mui/lab/LoadingButton";
+import axios from "axios";
+import {
+  APIStore,
+  AccountStore,
+  TokenStore,
+} from "../../components/store/Store";
+import toast, { Toaster } from "react-hot-toast";
 
 const Register = () => {
+  let navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confPassword, setConfPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState(null);
   const [errorMsgPosition, setErrorMsgPosition] = useState(0);
+  const token = TokenStore((state) => state.token);
+  const [isLoading, setIsLoading] = useState(false);
+  const MYAPI = APIStore((state) => state.MYAPI);
+  const addAccount = AccountStore((state) => state.addAccount);
+  const isUserLoggedIn = AccountStore(state => state.isUserLoggedIn);
+
+  useEffect(() => {
+    if (isUserLoggedIn) {
+      navigate("/");
+    }
+  }, [isUserLoggedIn]);
 
   function validateEmail(email) {
     var re = /\S+@\S+\.\S+/;
@@ -24,6 +43,7 @@ const Register = () => {
   const showErrorMsg = (msg, errorPostion) => {
     setErrorMsg(msg);
     setErrorMsgPosition(errorPostion);
+    setIsLoading(false);
   };
 
   const handleLoginSubmit = (e) => {
@@ -31,6 +51,7 @@ const Register = () => {
 
     setErrorMsg(null);
     setErrorMsgPosition(0);
+    setIsLoading(true);
 
     if (!username || username.trim() === "") {
       showErrorMsg("Username field is required!", 1);
@@ -68,13 +89,51 @@ const Register = () => {
     formData.append("username", info.username);
     formData.append("email", info.email);
     formData.append("password", info.password);
+    formData.append("register", true);
 
-    // await axios.post()
+
+    await axios
+      .post(`${MYAPI}/authentication/account-list/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: token,
+        },
+      })
+      .then((res) => {
+        if (res.data.error && res.data.account_already_exist) {
+          toast.error("Email is already in use!");
+        } else if (res.data.error) {
+          toast.error("Something went wrong!");
+        } else if (!res.data.error && res.data.account_created) {
+          toast.success("Account created successfully!");
+          setIsLoading(false);
+          getCreatedAccountObj(res.data.account_uid);
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => console.error(err));
+  }
+
+  async function getCreatedAccountObj(accountUid) {
+    await axios
+      .get(`${MYAPI}/authentication/account-detail/${accountUid}/`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: token,
+        },
+      })
+      .then((res) => {
+        addAccount(res.data);
+        navigate("/login/");
+      })
+      .catch((err) => console.error(err));
   }
 
   return (
     <div>
       <Container maxWidth="lg">
+        <Toaster position="bottom-right" reverseOrder={false} />
+
         <div className="login__grid">
           <Grid container spacing={2}>
             <Grid item xs={7}>
@@ -184,7 +243,7 @@ const Register = () => {
                       id="sign__inBtn"
                       variant="contained"
                       color="secondary"
-                      loading={false}
+                      loading={isLoading}
                       loadingPosition="end"
                     >
                       Sign Up

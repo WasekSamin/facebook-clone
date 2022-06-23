@@ -1,9 +1,4 @@
-import {
-  Button,
-  Divider,
-  IconButton,
-  Typography,
-} from "@mui/material";
+import { Button, Divider, IconButton, Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import React, { useState, useRef, useEffect } from "react";
 import { colorTheme } from "../colorTheme/ColorTheme";
@@ -23,7 +18,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import CreatePostModal from "../post/CreatePostModal";
-
+import { AccountStore } from "../store/Store";
 
 const Navbar = () => {
   const clearNavbarSearchFieldBtnRef = useRef(null);
@@ -33,6 +28,9 @@ const Navbar = () => {
   const searchInputRef = useRef(null);
   const [showNavbarSearchModal, setShowNavbarSearchModal] = useState(false);
   const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
+  const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+
+  console.log(loggedInUserInfo);
 
   const closeMobileSidebar = (event) => {
     if (
@@ -421,12 +419,12 @@ const Navbar = () => {
         </AnimatePresence>
       </>
     );
-  }
+  };
 
   return (
     <>
       {createPostModal()}
-      
+
       {searchPeopleModal()}
 
       <div style={{ backgroundColor: "#fff" }} className="navbar__mainDiv">
@@ -483,14 +481,16 @@ const Navbar = () => {
               >
                 <div>
                   <Divider id="navbar__mobileDivider" />
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    style={{ borderRadius: "9999px", width: "100%" }}
-                    onClick={() => setOpenCreatePostModal(true)}
-                  >
-                    Create
-                  </Button>
+                  {loggedInUserInfo !== null && (
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      style={{ borderRadius: "9999px", width: "100%" }}
+                      onClick={() => setOpenCreatePostModal(true)}
+                    >
+                      Create
+                    </Button>
+                  )}
                 </div>
                 <Stack
                   id="navbar__mobileSidebar"
@@ -498,12 +498,14 @@ const Navbar = () => {
                   spacing={3}
                 >
                   <Link to="/profile/" id="navbar__profileAvatar">
-                    <Stack direction="column" spacing={3}>
-                      <Avatar alt="Wasek Samin" src={profileImg} />
-                      <Typography id="navbar__profileUsername" variant="p">
-                        Wasek Samin
-                      </Typography>
-                    </Stack>
+                    {loggedInUserInfo !== null && (
+                      <Stack direction="column" spacing={3}>
+                        <Avatar alt="Wasek Samin" src={profileImg} />
+                        <Typography id="navbar__profileUsername" variant="p">
+                          {loggedInUserInfo.username}
+                        </Typography>
+                      </Stack>
+                    )}
                   </Link>
                   <Stack
                     id="navbar__mobileExtraLinks"
