@@ -18,9 +18,11 @@ import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import { Button } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import CreatePostModal from "../../components/post/CreatePostModal";
+import { AccountStore } from "../../components/store/Store";
 
 const HomeLeft = () => {
   const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
+  const loggedInUserInfo = AccountStore(state => state.loggedInUserInfo);
 
   const createPostModal = () => {
     return (
@@ -69,13 +71,15 @@ const HomeLeft = () => {
           }}
         >
           <div className="home__leftLinkList">
-            <List>
+            {
+              loggedInUserInfo !== null &&
+              <List>
               <ListItem disablePadding>
-                <Link to="/profile/">
+                <Link to={`/profile/${loggedInUserInfo.uid}/${loggedInUserInfo.username}/`}>
                   <ListItemButton>
-                    <Avatar alt="Wasek Samin" src={profileImg} />
+                    <Avatar alt={loggedInUserInfo.username} src={profileImg} />
                     <ListItemText
-                      primary="Wasek Samin"
+                      primary={loggedInUserInfo.username}
                       id="home__leftProfileUsernameText"
                     />
                   </ListItemButton>
@@ -158,7 +162,7 @@ const HomeLeft = () => {
                   Create
                 </Button>
               </div>
-            </List>
+            </List>}
           </div>
         </Box>
       </div>

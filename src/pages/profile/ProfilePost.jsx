@@ -8,8 +8,7 @@ import {
 } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import dummy1 from "../../dummy/images/img1.jpg";
-import profileImg from "../../dummy/images/portImg.png";
+import dummyImg from "../../dummy/static_images/default_profile.png";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -28,6 +27,13 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import CreatePost from "../../components/post/CreatePost";
 import "../../css/profile/ProfilePost.css";
+import {
+  APIStore,
+  PostStore,
+  ProfileStore,
+  SocketStore,
+} from "../../components/store/Store";
+import parse from "html-react-parser";
 
 const ProfilePost = () => {
   const [showPostHeaderRightOptions, setShowPostHeaderRightOptions] = useState(
@@ -36,6 +42,10 @@ const ProfilePost = () => {
   const postHeaderRightOptionsRef = useRef(null);
   const [showPostCommentModal, setShowPostCommentModal] = useState(null);
   const [showPostLikeModal, setShowPostLikeModal] = useState(null);
+  const currentProfileAllPosts = ProfileStore(
+    (state) => state.currentProfileAllPosts
+  );
+  const MYAPI = APIStore((state) => state.MYAPI);
 
   const closePostHeaderRightOptions = (event) => {
     if (
@@ -133,821 +143,146 @@ const ProfilePost = () => {
 
       <CreatePost />
 
-      <div className="post__div">
-        <div className="post__headerContent">
-          <Stack alignItems="center" direction="row" spacing={2}>
-            <Link to="#">
-              <Avatar alt="Wasek Samin" src={profileImg} />
-            </Link>
-            <Stack direction="column" spacing={0.2}>
-              <Link to="#">
-                <Typography className="post__contentUsername" variant="h5">
-                  Wasek Samin
-                </Typography>
+      {currentProfileAllPosts.map((post) => (
+        <div key={post.uid} className="post__div">
+          <div className="post__headerContent">
+            <Stack alignItems="center" direction="row" spacing={2}>
+              <Link to={`/profile/${post.user.uid}/${post.user.username}/`}>
+                <Avatar
+                  alt="Wasek Samin"
+                  src={
+                    post.user.current_profile_pic !== null
+                      ? `${MYAPI}${post.user.current_profile_pic}`
+                      : dummyImg
+                  }
+                />
               </Link>
-              <Typography
-                variant="p"
-                style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-              >
-                Datetime
-              </Typography>
-            </Stack>
-          </Stack>
-          <div className="post__headerRightMoreOptionBtn">
-            <IconButton onClick={() => setShowPostHeaderRightOptions(0)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <AnimatePresence initial={false} exitBeforeEnter={true}>
-              {showPostHeaderRightOptions === 0 && (
-                <motion.div
-                  initial={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    y: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  className="post__headerRightMoreOptions"
-                  ref={postHeaderRightOptionsRef}
+              <Stack direction="column" spacing={0.2}>
+                <Link to={`/profile/${post.user.uid}/${post.user.username}/`}>
+                  <Typography className="post__contentUsername" variant="h5">
+                    {post.user.username}
+                  </Typography>
+                </Link>
+                <Typography
+                  variant="p"
+                  style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
                 >
-                  <List>
-                    <ListItem disablePadding>
-                      <Link to="#" style={{ width: "100%" }}>
+                  {post.char_created_at}
+                </Typography>
+              </Stack>
+            </Stack>
+            <div className="post__headerRightMoreOptionBtn">
+              <IconButton
+                onClick={() => setShowPostHeaderRightOptions(post.uid)}
+              >
+                <MoreHorizIcon />
+              </IconButton>
+              <AnimatePresence initial={false} exitBeforeEnter={true}>
+                {showPostHeaderRightOptions === 0 && (
+                  <motion.div
+                    initial={{
+                      y: -20,
+                      opacity: 0,
+                    }}
+                    animate={{
+                      y: 0,
+                      opacity: 1,
+                    }}
+                    exit={{
+                      y: -20,
+                      opacity: 0,
+                    }}
+                    className="post__headerRightMoreOptions"
+                    ref={postHeaderRightOptionsRef}
+                  >
+                    <List>
+                      <ListItem disablePadding>
+                        <Link to="#" style={{ width: "100%" }}>
+                          <ListItemButton
+                            style={{
+                              color: "var(--slate-500)",
+                            }}
+                          >
+                            <ListItemIcon>
+                              <EditIcon />
+                            </ListItemIcon>
+                            <ListItemText
+                              style={{ marginLeft: "-30px" }}
+                              primary="Edit Post"
+                            />
+                          </ListItemButton>
+                        </Link>
+                      </ListItem>
+                      <ListItem disablePadding>
                         <ListItemButton
-                          style={{
-                            color: "var(--slate-500)",
-                          }}
-                        >
-                          <ListItemIcon>
-                            <EditIcon />
-                          </ListItemIcon>
-                          <ListItemText
-                            style={{ marginLeft: "-30px" }}
-                            primary="Edit Post"
-                          />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        style={{
-                          color: `${colorTheme.palette.secondary.main}`,
-                        }}
-                      >
-                        <ListItemIcon
                           style={{
                             color: `${colorTheme.palette.secondary.main}`,
                           }}
                         >
-                          <DeleteOutlineIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          style={{ marginLeft: "-30px" }}
-                          primary="Remove Post"
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        <div className="post__content">
-          <img src={dummy1} alt="" />
-          {/* <video autoPlay={true} controls>
-            <source src={video1} />
-            Your browser does not support the video tag.
-          </video> */}
-        </div>
-
-        <Stack
-          id="post__options"
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <Button>
-            <FavoriteBorderIcon />
-          </Button>
-          <Button onClick={() => setShowPostCommentModal(1)}>
-            <MessageOutlinedIcon />
-          </Button>
-          <Button>
-            <ShareOutlinedIcon />
-          </Button>
-        </Stack>
-
-        <Divider style={{ marginTop: "0.5rem" }} />
-
-        <Stack
-          id="post__counter"
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography
-            className="post__totalLikesCouter"
-            variant="p"
-            onClick={() => setShowPostLikeModal(1)}
-          >
-            1.2k hearts
-          </Typography>
-          <Typography
-            className="post__totalCommentsCouter"
-            variant="p"
-            onClick={() => setShowPostCommentModal(1)}
-          >
-            1.2k comments
-          </Typography>
-        </Stack>
-      </div>
-
-      <div className="post__div">
-        <div className="post__headerContent">
-          <Stack alignItems="center" direction="row" spacing={2}>
-            <Link to="#">
-              <Avatar alt="Wasek Samin" src={profileImg} />
-            </Link>
-            <Stack direction="column" spacing={0.2}>
-              <Link to="#">
-                <Typography className="post__contentUsername" variant="h5">
-                  Wasek Samin
-                </Typography>
-              </Link>
-              <Typography
-                variant="p"
-                style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-              >
-                Datetime
-              </Typography>
-            </Stack>
-          </Stack>
-          <div className="post__headerRightMoreOptionBtn">
-            <IconButton onClick={() => setShowPostHeaderRightOptions(0)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <AnimatePresence initial={false} exitBeforeEnter={true}>
-              {showPostHeaderRightOptions === 0 && (
-                <motion.div
-                  initial={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    y: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  className="post__headerRightMoreOptions"
-                  ref={postHeaderRightOptionsRef}
-                >
-                  <List>
-                    <ListItem disablePadding>
-                      <Link to="#" style={{ width: "100%" }}>
-                        <ListItemButton
-                          style={{
-                            color: "var(--slate-500)",
-                          }}
-                        >
-                          <ListItemIcon>
-                            <EditIcon />
+                          <ListItemIcon
+                            style={{
+                              color: `${colorTheme.palette.secondary.main}`,
+                            }}
+                          >
+                            <DeleteOutlineIcon />
                           </ListItemIcon>
                           <ListItemText
                             style={{ marginLeft: "-30px" }}
-                            primary="Edit Post"
+                            primary="Remove Post"
                           />
                         </ListItemButton>
-                      </Link>
-                    </ListItem>
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        style={{
-                          color: `${colorTheme.palette.secondary.main}`,
-                        }}
-                      >
-                        <ListItemIcon
-                          style={{
-                            color: `${colorTheme.palette.secondary.main}`,
-                          }}
-                        >
-                          <DeleteOutlineIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          style={{ marginLeft: "-30px" }}
-                          primary="Remove Post"
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      </ListItem>
+                    </List>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
 
-        <div className="post__content">
-          <img src={dummy1} alt="" />
-          {/* <video autoPlay={true} controls>
-            <source src={video1} />
-            Your browser does not support the video tag.
-          </video> */}
-        </div>
+          <div className="post__content">{parse(post.content)}</div>
 
-        <Stack
-          id="post__options"
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <Button>
-            <FavoriteBorderIcon />
-          </Button>
-          <Button onClick={() => setShowPostCommentModal(1)}>
-            <MessageOutlinedIcon />
-          </Button>
-          <Button>
-            <ShareOutlinedIcon />
-          </Button>
-        </Stack>
-
-        <Divider style={{ marginTop: "0.5rem" }} />
-
-        <Stack
-          id="post__counter"
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography
-            className="post__totalLikesCouter"
-            variant="p"
-            onClick={() => setShowPostLikeModal(1)}
+          <Stack
+            id="post__options"
+            direction="row"
+            alignItems="center"
+            spacing={1}
           >
-            1.2k hearts
-          </Typography>
-          <Typography
-            className="post__totalCommentsCouter"
-            variant="p"
-            onClick={() => setShowPostCommentModal(1)}
-          >
-            1.2k comments
-          </Typography>
-        </Stack>
-      </div>
-
-      <div className="post__div">
-        <div className="post__headerContent">
-          <Stack alignItems="center" direction="row" spacing={2}>
-            <Link to="#">
-              <Avatar alt="Wasek Samin" src={profileImg} />
-            </Link>
-            <Stack direction="column" spacing={0.2}>
-              <Link to="#">
-                <Typography className="post__contentUsername" variant="h5">
-                  Wasek Samin
-                </Typography>
-              </Link>
-              <Typography
-                variant="p"
-                style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-              >
-                Datetime
-              </Typography>
-            </Stack>
+            <Button>
+              <FavoriteBorderIcon />
+            </Button>
+            <Button onClick={() => setShowPostCommentModal(post.uid)}>
+              <MessageOutlinedIcon />
+            </Button>
+            <Button>
+              <ShareOutlinedIcon />
+            </Button>
           </Stack>
-          <div className="post__headerRightMoreOptionBtn">
-            <IconButton onClick={() => setShowPostHeaderRightOptions(0)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <AnimatePresence initial={false} exitBeforeEnter={true}>
-              {showPostHeaderRightOptions === 0 && (
-                <motion.div
-                  initial={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    y: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  className="post__headerRightMoreOptions"
-                  ref={postHeaderRightOptionsRef}
-                >
-                  <List>
-                    <ListItem disablePadding>
-                      <Link to="#" style={{ width: "100%" }}>
-                        <ListItemButton
-                          style={{
-                            color: "var(--slate-500)",
-                          }}
-                        >
-                          <ListItemIcon>
-                            <EditIcon />
-                          </ListItemIcon>
-                          <ListItemText
-                            style={{ marginLeft: "-30px" }}
-                            primary="Edit Post"
-                          />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        style={{
-                          color: `${colorTheme.palette.secondary.main}`,
-                        }}
-                      >
-                        <ListItemIcon
-                          style={{
-                            color: `${colorTheme.palette.secondary.main}`,
-                          }}
-                        >
-                          <DeleteOutlineIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          style={{ marginLeft: "-30px" }}
-                          primary="Remove Post"
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
 
-        <div className="post__content">
-          <img src={dummy1} alt="" />
-          {/* <video autoPlay={true} controls>
-            <source src={video1} />
-            Your browser does not support the video tag.
-          </video> */}
-        </div>
+          <Divider style={{ marginTop: "0.5rem" }} />
 
-        <Stack
-          id="post__options"
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <Button>
-            <FavoriteBorderIcon />
-          </Button>
-          <Button onClick={() => setShowPostCommentModal(1)}>
-            <MessageOutlinedIcon />
-          </Button>
-          <Button>
-            <ShareOutlinedIcon />
-          </Button>
-        </Stack>
-
-        <Divider style={{ marginTop: "0.5rem" }} />
-
-        <Stack
-          id="post__counter"
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography
-            className="post__totalLikesCouter"
-            variant="p"
-            onClick={() => setShowPostLikeModal(1)}
+          <Stack
+            id="post__counter"
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
           >
-            1.2k hearts
-          </Typography>
-          <Typography
-            className="post__totalCommentsCouter"
-            variant="p"
-            onClick={() => setShowPostCommentModal(1)}
-          >
-            1.2k comments
-          </Typography>
-        </Stack>
-      </div>
-
-      <div className="post__div">
-        <div className="post__headerContent">
-          <Stack alignItems="center" direction="row" spacing={2}>
-            <Link to="#">
-              <Avatar alt="Wasek Samin" src={profileImg} />
-            </Link>
-            <Stack direction="column" spacing={0.2}>
-              <Link to="#">
-                <Typography className="post__contentUsername" variant="h5">
-                  Wasek Samin
-                </Typography>
-              </Link>
-              <Typography
-                variant="p"
-                style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-              >
-                Datetime
-              </Typography>
-            </Stack>
+            <Typography
+              className="post__totalLikesCouter"
+              variant="p"
+              onClick={() => setShowPostLikeModal(post.uid)}
+            >
+              1.2k hearts
+            </Typography>
+            <Typography
+              className="post__totalCommentsCouter"
+              variant="p"
+              onClick={() => setShowPostCommentModal(post.uid)}
+            >
+              1.2k comments
+            </Typography>
           </Stack>
-          <div className="post__headerRightMoreOptionBtn">
-            <IconButton onClick={() => setShowPostHeaderRightOptions(0)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <AnimatePresence initial={false} exitBeforeEnter={true}>
-              {showPostHeaderRightOptions === 0 && (
-                <motion.div
-                  initial={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    y: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  className="post__headerRightMoreOptions"
-                  ref={postHeaderRightOptionsRef}
-                >
-                  <List>
-                    <ListItem disablePadding>
-                      <Link to="#" style={{ width: "100%" }}>
-                        <ListItemButton
-                          style={{
-                            color: "var(--slate-500)",
-                          }}
-                        >
-                          <ListItemIcon>
-                            <EditIcon />
-                          </ListItemIcon>
-                          <ListItemText
-                            style={{ marginLeft: "-30px" }}
-                            primary="Edit Post"
-                          />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        style={{
-                          color: `${colorTheme.palette.secondary.main}`,
-                        }}
-                      >
-                        <ListItemIcon
-                          style={{
-                            color: `${colorTheme.palette.secondary.main}`,
-                          }}
-                        >
-                          <DeleteOutlineIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          style={{ marginLeft: "-30px" }}
-                          primary="Remove Post"
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
-
-        <div className="post__content">
-          <img src={dummy1} alt="" />
-          {/* <video autoPlay={true} controls>
-            <source src={video1} />
-            Your browser does not support the video tag.
-          </video> */}
-        </div>
-
-        <Stack
-          id="post__options"
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <Button>
-            <FavoriteBorderIcon />
-          </Button>
-          <Button onClick={() => setShowPostCommentModal(1)}>
-            <MessageOutlinedIcon />
-          </Button>
-          <Button>
-            <ShareOutlinedIcon />
-          </Button>
-        </Stack>
-
-        <Divider style={{ marginTop: "0.5rem" }} />
-
-        <Stack
-          id="post__counter"
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography
-            className="post__totalLikesCouter"
-            variant="p"
-            onClick={() => setShowPostLikeModal(1)}
-          >
-            1.2k hearts
-          </Typography>
-          <Typography
-            className="post__totalCommentsCouter"
-            variant="p"
-            onClick={() => setShowPostCommentModal(1)}
-          >
-            1.2k comments
-          </Typography>
-        </Stack>
-      </div>
-
-      <div className="post__div">
-        <div className="post__headerContent">
-          <Stack alignItems="center" direction="row" spacing={2}>
-            <Link to="#">
-              <Avatar alt="Wasek Samin" src={profileImg} />
-            </Link>
-            <Stack direction="column" spacing={0.2}>
-              <Link to="#">
-                <Typography className="post__contentUsername" variant="h5">
-                  Wasek Samin
-                </Typography>
-              </Link>
-              <Typography
-                variant="p"
-                style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-              >
-                Datetime
-              </Typography>
-            </Stack>
-          </Stack>
-          <div className="post__headerRightMoreOptionBtn">
-            <IconButton onClick={() => setShowPostHeaderRightOptions(0)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <AnimatePresence initial={false} exitBeforeEnter={true}>
-              {showPostHeaderRightOptions === 0 && (
-                <motion.div
-                  initial={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    y: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  className="post__headerRightMoreOptions"
-                  ref={postHeaderRightOptionsRef}
-                >
-                  <List>
-                    <ListItem disablePadding>
-                      <Link to="#" style={{ width: "100%" }}>
-                        <ListItemButton
-                          style={{
-                            color: "var(--slate-500)",
-                          }}
-                        >
-                          <ListItemIcon>
-                            <EditIcon />
-                          </ListItemIcon>
-                          <ListItemText
-                            style={{ marginLeft: "-30px" }}
-                            primary="Edit Post"
-                          />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        style={{
-                          color: `${colorTheme.palette.secondary.main}`,
-                        }}
-                      >
-                        <ListItemIcon
-                          style={{
-                            color: `${colorTheme.palette.secondary.main}`,
-                          }}
-                        >
-                          <DeleteOutlineIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          style={{ marginLeft: "-30px" }}
-                          primary="Remove Post"
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        <div className="post__content">
-          <img src={dummy1} alt="" />
-          {/* <video autoPlay={true} controls>
-            <source src={video1} />
-            Your browser does not support the video tag.
-          </video> */}
-        </div>
-
-        <Stack
-          id="post__options"
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <Button>
-            <FavoriteBorderIcon />
-          </Button>
-          <Button onClick={() => setShowPostCommentModal(1)}>
-            <MessageOutlinedIcon />
-          </Button>
-          <Button>
-            <ShareOutlinedIcon />
-          </Button>
-        </Stack>
-
-        <Divider style={{ marginTop: "0.5rem" }} />
-
-        <Stack
-          id="post__counter"
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography
-            className="post__totalLikesCouter"
-            variant="p"
-            onClick={() => setShowPostLikeModal(1)}
-          >
-            1.2k hearts
-          </Typography>
-          <Typography
-            className="post__totalCommentsCouter"
-            variant="p"
-            onClick={() => setShowPostCommentModal(1)}
-          >
-            1.2k comments
-          </Typography>
-        </Stack>
-      </div>
-
-      <div className="post__div">
-        <div className="post__headerContent">
-          <Stack alignItems="center" direction="row" spacing={2}>
-            <Link to="#">
-              <Avatar alt="Wasek Samin" src={profileImg} />
-            </Link>
-            <Stack direction="column" spacing={0.2}>
-              <Link to="#">
-                <Typography className="post__contentUsername" variant="h5">
-                  Wasek Samin
-                </Typography>
-              </Link>
-              <Typography
-                variant="p"
-                style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-              >
-                Datetime
-              </Typography>
-            </Stack>
-          </Stack>
-          <div className="post__headerRightMoreOptionBtn">
-            <IconButton onClick={() => setShowPostHeaderRightOptions(0)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <AnimatePresence initial={false} exitBeforeEnter={true}>
-              {showPostHeaderRightOptions === 0 && (
-                <motion.div
-                  initial={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    y: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    y: -20,
-                    opacity: 0,
-                  }}
-                  className="post__headerRightMoreOptions"
-                  ref={postHeaderRightOptionsRef}
-                >
-                  <List>
-                    <ListItem disablePadding>
-                      <Link to="#" style={{ width: "100%" }}>
-                        <ListItemButton
-                          style={{
-                            color: "var(--slate-500)",
-                          }}
-                        >
-                          <ListItemIcon>
-                            <EditIcon />
-                          </ListItemIcon>
-                          <ListItemText
-                            style={{ marginLeft: "-30px" }}
-                            primary="Edit Post"
-                          />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                    <ListItem disablePadding>
-                      <ListItemButton
-                        style={{
-                          color: `${colorTheme.palette.secondary.main}`,
-                        }}
-                      >
-                        <ListItemIcon
-                          style={{
-                            color: `${colorTheme.palette.secondary.main}`,
-                          }}
-                        >
-                          <DeleteOutlineIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                          style={{ marginLeft: "-30px" }}
-                          primary="Remove Post"
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        <div className="post__content">
-          <img src={dummy1} alt="" />
-          {/* <video autoPlay={true} controls>
-            <source src={video1} />
-            Your browser does not support the video tag.
-          </video> */}
-        </div>
-
-        <Stack
-          id="post__options"
-          direction="row"
-          alignItems="center"
-          spacing={1}
-        >
-          <Button>
-            <FavoriteBorderIcon />
-          </Button>
-          <Button onClick={() => setShowPostCommentModal(1)}>
-            <MessageOutlinedIcon />
-          </Button>
-          <Button>
-            <ShareOutlinedIcon />
-          </Button>
-        </Stack>
-
-        <Divider style={{ marginTop: "0.5rem" }} />
-
-        <Stack
-          id="post__counter"
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography
-            className="post__totalLikesCouter"
-            variant="p"
-            onClick={() => setShowPostLikeModal(1)}
-          >
-            1.2k hearts
-          </Typography>
-          <Typography
-            className="post__totalCommentsCouter"
-            variant="p"
-            onClick={() => setShowPostCommentModal(1)}
-          >
-            1.2k comments
-          </Typography>
-        </Stack>
-      </div>
+      ))}
     </div>
   );
 };

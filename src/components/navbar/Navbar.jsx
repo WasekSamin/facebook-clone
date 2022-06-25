@@ -30,8 +30,6 @@ const Navbar = () => {
   const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
   const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
 
-  console.log(loggedInUserInfo);
-
   const closeMobileSidebar = (event) => {
     if (
       mobileSidebarRef.current !== null &&

@@ -16,10 +16,15 @@ import dummy1 from "../../dummy/images/img1.jpg";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import EditProfileModal from "../../components/profile/EditProfileModal";
+import { ProfileStore } from "../../components/store/Store";
 
 const ProfilePostLeftSidebar = () => {
   const [profileViewedImg, setProfileViewedImg] = useState(null);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const currentProfile = ProfileStore((state) => state.currentProfile);
+  const canCurrentProfileEditable = ProfileStore(
+    (state) => state.canCurrentProfileEditable
+  );
 
   const editProfileDetailsModal = () => {
     return (
@@ -99,102 +104,166 @@ const ProfilePostLeftSidebar = () => {
       {editProfileDetailsModal()}
 
       <Stack direction="column" spacing={2}>
-        <Stack
-          direction="column"
-          spacing={1}
-          style={{
-            backgroundColor: "white",
-            padding: "10px",
-            borderRadius: "10px",
-          }}
-        >
-          <Typography
-            variant="h6"
-            style={{ fontWeight: "600", marginBottom: "0.5rem" }}
+        {currentProfile !== null && (
+          <Stack
+            direction="column"
+            spacing={1}
+            style={{
+              backgroundColor: "white",
+              padding: "10px",
+              borderRadius: "10px",
+            }}
           >
-            Intro
-          </Typography>
-          <Stack direction="column" spacing={1.5}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <PersonOutlineOutlinedIcon
-                style={{ color: "var(--slate-500)" }}
-              />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                Wasek Samin
-              </Typography>
+            <Typography
+              variant="h6"
+              style={{ fontWeight: "600", marginBottom: "0.5rem" }}
+            >
+              Intro
+            </Typography>
+            <Stack direction="column" spacing={1.5}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <PersonOutlineOutlinedIcon
+                  style={{ color: "var(--slate-500)" }}
+                />
+                <Typography
+                  style={{ color: "var(--slate-600)", fontSize: "1rem" }}
+                  variant="p"
+                >
+                  {currentProfile.username}
+                </Typography>
+              </Stack>
+              {(currentProfile.address !== null && currentProfile.address !== "") && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <HomeOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                  <Typography
+                    style={{ color: "var(--slate-600)", fontSize: "1rem" }}
+                    variant="p"
+                  >
+                    {currentProfile.address}
+                  </Typography>
+                </Stack>
+              )}
+              {currentProfile.working_status !== null && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <WorkOutlineOutlinedIcon
+                    style={{ color: "var(--slate-500)" }}
+                  />
+                  <Typography
+                    style={{
+                      color: "var(--slate-600)",
+                      fontSize: "1rem",
+                      textTransform: "capitalize",
+                    }}
+                    variant="p"
+                  >
+                    {currentProfile.working_status === "Both"
+                      ? "Currently working & Studying"
+                      : currentProfile.working_status === "Studying"
+                      ? `Currently a student`
+                      : currentProfile.working_status === "Working"
+                      ? `Currently working as ${currentProfile.job_position}`
+                      : "Currently unemployed"}
+                  </Typography>
+                </Stack>
+              )}
+              {(currentProfile.working_status === "Both" ||
+                currentProfile.working_status === "Studying") && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <SchoolOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                  <Typography
+                    style={{
+                      color: "var(--slate-600)",
+                      fontSize: "1rem",
+                      textTransform: "capitalize",
+                    }}
+                    variant="p"
+                  >
+                    Studying at {currentProfile.studying_at}
+                  </Typography>
+                </Stack>
+              )}
+              {(currentProfile.working_status === "Both" ||
+                currentProfile.working_status === "Working") && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <WorkOutlineOutlinedIcon
+                    style={{ color: "var(--slate-500)" }}
+                  />
+                  <Typography
+                    style={{
+                      color: "var(--slate-600)",
+                      fontSize: "1rem",
+                      textTransform: "capitalize",
+                    }}
+                    variant="p"
+                  >
+                    Working at {currentProfile.working_at}{" "}
+                    {currentProfile.working_status === "Both" &&
+                      `as ${currentProfile.job_position}`}
+                  </Typography>
+                </Stack>
+              )}
+              {(currentProfile.phone_no !== null && currentProfile.phone_no !== "") && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <PhoneIphoneOutlinedIcon
+                    style={{ color: "var(--slate-500)" }}
+                  />
+                  <Typography
+                    style={{ color: "var(--slate-600)", fontSize: "1rem" }}
+                    variant="p"
+                  >
+                    {currentProfile.phone_no}
+                  </Typography>
+                </Stack>
+              )}
+              {currentProfile.relation_status !== null && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <FavoriteBorderOutlinedIcon
+                    style={{ color: "var(--slate-500)" }}
+                  />
+                  <Typography
+                    style={{
+                      color: "var(--slate-600)",
+                      fontSize: "1rem",
+                      textTransform: "capitalize",
+                    }}
+                    variant="p"
+                  >
+                    {currentProfile.relation_status}
+                  </Typography>
+                </Stack>
+              )}
+              {currentProfile.gender !== null && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <MaleOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                  <Typography
+                    style={{
+                      color: "var(--slate-600)",
+                      fontSize: "1rem",
+                      textTransform: "capitalize",
+                    }}
+                    variant="p"
+                  >
+                    {currentProfile.gender}
+                  </Typography>
+                </Stack>
+              )}
             </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <HomeOutlinedIcon style={{ color: "var(--slate-500)" }} />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                Home address Lorem, ipsum dolor sit amet consectetur adipisicing
-                elit. Sequi, mollitia.
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <WorkOutlineOutlinedIcon style={{ color: "var(--slate-500)" }} />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                Currently a student
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <SchoolOutlinedIcon style={{ color: "var(--slate-500)" }} />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                Studying at Some Institution
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <PhoneIphoneOutlinedIcon style={{ color: "var(--slate-500)" }} />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                1234567890
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FavoriteBorderOutlinedIcon
-                style={{ color: "var(--slate-500)" }}
-              />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                Single
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <MaleOutlinedIcon style={{ color: "var(--slate-500)" }} />
-              <Typography
-                style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                variant="p"
-              >
-                Male
-              </Typography>
-            </Stack>
-          </Stack>
 
-          <Button
-            variant="contained"
-            color="success"
-            style={{ marginTop: "1.5rem" }}
-            onClick={() => setShowEditProfileModal(true)}
-          >
-            <ModeEditOutlineOutlinedIcon style={{ marginRight: "0.12rem" }} />{" "}
-            Edit Details
-          </Button>
-        </Stack>
+            {canCurrentProfileEditable && (
+              <Button
+                variant="contained"
+                color="success"
+                style={{ marginTop: "1.5rem" }}
+                onClick={() => setShowEditProfileModal(true)}
+              >
+                <ModeEditOutlineOutlinedIcon
+                  style={{ marginRight: "0.12rem" }}
+                />{" "}
+                Edit Details
+              </Button>
+            )}
+          </Stack>
+        )}
 
         {/* Photos */}
         <Stack

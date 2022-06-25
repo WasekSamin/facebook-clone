@@ -1,19 +1,31 @@
-import { Button, IconButton, Stack, Typography } from "@mui/material";
+import { IconButton, Stack, Typography } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import "../../css/profile/EditProfilePicModal.css";
 import CloseIcon from "@mui/icons-material/Close";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
+import axios from "axios";
+import { AccountStore, APIStore, PostStore, ProfileStore, SocketStore, TokenStore } from "../store/Store";
+import LoadingButton from "@mui/lab/LoadingButton";
 
 const EditProfilePicModal = ({
   showEditProfilePicModal,
   setShowEditProfilePicModal,
 }) => {
   const [imageFile, setImageFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const editProfilePicModalRef = useRef(null);
   const uploadProfilePicLabelRef = useRef(null);
   const uploadProfilePicInputRef = useRef(null);
   const imageFilePreviewRef = useRef(null);
+  const MYAPI = APIStore((state) => state.MYAPI);
+  const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+  const updateLoggedInUserInfo = AccountStore(state => state.updateLoggedInUserInfo);
+  const updateAccountProfilePic = AccountStore(state => state.updateAccountProfilePic);
+  const token = TokenStore((state) => state.token);
+  const addNewPost = PostStore(state => state.addNewPost);
+  const socket = SocketStore(state => state.socket);
+  const updateCurrentProfile = ProfileStore(state => state.updateCurrentProfile);
 
   const closeEditProfilePicModal = () => {
     setImageFile(null);
@@ -105,6 +117,61 @@ const EditProfilePicModal = ({
     }
   };
 
+  const uploadProfilePic = async () => {
+    if (imageFile !== null && loggedInUserInfo !== null) {
+      setIsLoading(true);
+
+      let formData = new FormData();
+      formData.append("profilePic", imageFile);
+      formData.append("profilePicUpload", true);
+      formData.append("contentImgData", imageFilePreviewRef.current.src);
+
+      await axios.put(`${MYAPI}/authentication/account-detail/${loggedInUserInfo.uid}/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `token ${token}`
+        }
+      }).then(res => {
+        console.log(res.data);
+        if (res.data.error) {
+          alert("Failed to upload image! Something went wrong...");
+        } else if (!res.data.error && res.data.profile_pic_uploaded) {
+          getUpdatedUserObj(res.data.account_obj_uid);
+          getUpdatedPicPostObj(res.data.post_obj_uid);
+        }
+      }).catch(err => console.error(err));
+    }
+  };
+
+  async function getUpdatedUserObj(accountUid) {
+    await axios.get(`${MYAPI}/authentication/account-detail/${accountUid}/`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${token}`
+      }
+    }).then(res => {
+      updateCurrentProfile(res.data);
+      updateLoggedInUserInfo(res.data);
+      updateAccountProfilePic(res.data);
+      socket.emit("update-account-data", res.data);
+      setImageFile(null);
+      setIsLoading(false);
+      setShowEditProfilePicModal(false);
+    }).catch(err => console.error(err));
+  }
+
+  async function getUpdatedPicPostObj(postObjUid) {
+    await axios.get(`${MYAPI}/post/post-detail/${postObjUid}/`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${token}`
+      }
+    }).then(res => {
+      addNewPost(res.data);
+      socket.emit("post-created", res.data);
+    }).catch(err => console.error(err));
+  }
+
   return (
     <div id="edit__profilePicModal" ref={editProfilePicModalRef}>
       <Stack direction="column" spacing={1}>
@@ -154,9 +221,15 @@ const EditProfilePicModal = ({
         )}
 
         {imageFile !== null && (
-          <Button variant="contained" color="secondary">
+          <LoadingButton
+          loading={isLoading}
+          loadingPosition="end"
+            onClick={uploadProfilePic}
+            variant="contained"
+            color="secondary"
+          >
             <FileUploadIcon style={{ marginRight: "0.12rem" }} /> Upload
-          </Button>
+          </LoadingButton>
         )}
       </Stack>
     </div>

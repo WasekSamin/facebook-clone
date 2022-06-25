@@ -1,19 +1,83 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import CloseIcon from "@mui/icons-material/Close";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import CachedIcon from "@mui/icons-material/Cached";
 import { IconButton, Typography, Button } from "@mui/material";
 import "../../css/post/CreatePostModal.css";
+import {
+  AccountStore,
+  APIStore,
+  PostStore,
+  SocketStore,
+  TokenStore,
+} from "../store/Store";
+import axios from "axios";
 
 const CreatePostModal = ({ openCreatePostModal, setOpenCreatePostModal }) => {
   const createPostRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+  const MYAPI = APIStore((state) => state.MYAPI);
+  const token = TokenStore((state) => state.token);
+  const addNewPost = PostStore((state) => state.addNewPost);
+  const socket = SocketStore((state) => state.socket);
 
   const createPost = () => {
-    if (createPostRef.current) {
-      console.log(createPostRef.current.getContent());
+    if (createPostRef.current !== null) {
+      setIsLoading(true);
+
+      if (createPostRef.current.getContent().trim() === "") {
+        setIsLoading(false);
+      } else {
+        createUserPost({
+          userUid: loggedInUserInfo.uid,
+          content: createPostRef.current.getContent().trim(),
+        });
+      }
     }
   };
+
+  async function createUserPost(data) {
+    let formData = new FormData();
+
+    formData.append("userUid", data.userUid);
+    formData.append("content", data.content);
+
+    await axios
+      .post(`${MYAPI}/post/post-list/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `token ${token}`,
+        },
+      })
+      .then((res) => {
+        if (res.data.error) {
+          alert("Failed to post, something went wrong!");
+          setIsLoading(false);
+        } else if (!res.data.error && res.data.post_created) {
+          getCreatedPostObj(res.data.post_uid);
+        }
+      })
+      .catch((err) => console.error(err));
+  }
+
+  async function getCreatedPostObj(postUid) {
+    await axios
+      .get(`${MYAPI}/post/post-detail/${postUid}/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `token ${token}`,
+        },
+      })
+      .then((res) => {
+        addNewPost(res.data);
+        setIsLoading(false);
+        setOpenCreatePostModal(false);
+        socket.emit("post-created", res.data);
+      })
+      .catch((err) => console.error(err));
+  }
 
   return (
     <div>
@@ -89,7 +153,7 @@ const CreatePostModal = ({ openCreatePostModal, setOpenCreatePostModal }) => {
           onClick={createPost}
         >
           Post <RocketLaunchIcon style={{ marginLeft: "0.2rem" }} />
-          {/* <CachedIcon id="create__postSpinner" /> */}
+          {isLoading && <CachedIcon id="create__postSpinner" />}
         </Button>
       </>
     </div>

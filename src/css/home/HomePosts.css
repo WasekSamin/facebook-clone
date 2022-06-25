@@ -17,21 +17,25 @@
     height: auto;
     border-radius: 10px;
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
-    justify-content: center;
     row-gap: 10px;
 }
 
-.post__content > video {
+.post__content video {
     aspect-ratio: 16/9;
     max-width: 100%;
     height: auto;
     border-radius: 10px;
+    display: flex;
+    margin: 0 auto;
 }
 
-.post__content > img {
+.post__content img {
+    display: flex;
     max-width: 100%;
     height: 400px;
+    margin: 0 auto;
     object-fit: cover;
     border-radius: 10px;
 }

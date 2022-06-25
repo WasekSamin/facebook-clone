@@ -17,9 +17,9 @@ import ActiveAccount from "./pages/authentication/ActiveAccount";
 import {
   AccountStore,
   APIStore,
+  PostStore,
   SocketStore,
   TokenStore,
-  UserAccountPhotoStore,
 } from "./components/store/Store";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -32,6 +32,7 @@ function App() {
   const token = TokenStore((state) => state.token);
   const updateToken = TokenStore((state) => state.updateToken);
   const addAllAccounts = AccountStore((state) => state.addAllAccounts);
+  const socket = SocketStore((state) => state.socket);
   const updateSocket = SocketStore((state) => state.updateSocket);
   const updateIsUserLoggedIn = AccountStore(
     (state) => state.updateIsUserLoggedIn
@@ -39,10 +40,12 @@ function App() {
   const updateLoggedInUserInfo = AccountStore(
     (state) => state.updateLoggedInUserInfo
   );
-  const updateUserPhotos = UserAccountPhotoStore(
-    (state) => state.updateUserPhotos
-  );
-  const updateUserCurrentProfilePic = UserAccountPhotoStore(state => state.updateUserCurrentProfilePic);
+  const allPosts = PostStore((state) => state.allPosts);
+  const accounts = AccountStore((state) => state.accounts);
+  const addAllPosts = PostStore((state) => state.addAllPosts);
+  const addNewPost = PostStore((state) => state.addNewPost);
+  const updateAccountData = AccountStore(state => state.updateAccountData);
+  const updatePostAccountData = PostStore(state => state.updatePostAccountData);
 
   // Connecting socket
   const socketConnection = (userToken) => {
@@ -79,43 +82,6 @@ function App() {
       .catch((err) => console.error(err));
   };
 
-  const fetchUserPicObj = (account_profile_uid) => {
-    axios
-      .get(
-        `${MYAPI}/authentication/account-profile-pic-detail/${account_profile_uid}/`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-        }
-      )
-      .then((res) => {
-        updateUserPhotos(res.data);
-
-        if (res.data.profile_pic !== null) {
-          updateUserCurrentProfilePic(res.data.profile_pic);
-        }
-      })
-      .catch((err) => console.error(err));
-  };
-
-  // Fetching user all posted photos
-  const fetchUserAllPics = (userUid) => {
-    axios
-      .get(`${MYAPI}/authentication/fetch-user-profile-pics/${userUid}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        if (!res.data.error && res.data.account_profile_pic_obj_found) {
-          fetchUserPicObj(res.data.account_profile_pic_obj_uid);
-        }
-      })
-      .catch((err) => console.error(err));
-  };
-
   // Fetching the logged in user info
   const fetchLoggedInUserInfo = (userToken) => {
     axios
@@ -129,7 +95,6 @@ function App() {
           alert("Something went wrong!");
         } else if (!res.data.error && res.data.user_found) {
           fetchAccountInfo(res.data.user_uid, userToken);
-          fetchUserAllPics(res.data.user_uid);
         }
       })
       .catch((err) => console.error(err));
@@ -150,7 +115,10 @@ function App() {
         )
         .then((res) => {
           if (res.data.error) {
-            if (window.location.pathname !== "/login/" && window.location.pathname !== "/register/")
+            if (
+              window.location.pathname !== "/login/" &&
+              window.location.pathname !== "/register/"
+            )
               navigate("/login/");
           } else if (!res.data.error && res.data.token_valid) {
             updateToken(tokenCookie);
@@ -160,7 +128,10 @@ function App() {
         })
         .catch((err) => console.error(err));
     } else {
-      if (window.location.pathname !== "/login/" && window.location.pathname !== "/register/")
+      if (
+        window.location.pathname !== "/login/" &&
+        window.location.pathname !== "/register/"
+      )
         navigate("/login/");
     }
   };
@@ -170,7 +141,7 @@ function App() {
       .get(`${MYAPI}/authentication/account-list/`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: token,
+          Authorization: `token ${token}`,
         },
       })
       .then((res) => {
@@ -179,10 +150,51 @@ function App() {
       .catch((err) => console.error(err));
   };
 
+  const fetchPosts = async () => {
+    await axios
+      .get(`${MYAPI}/post/post-list/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `token ${token}`,
+        },
+      })
+      .then((res) => {
+        addAllPosts(res.data);
+      })
+      .catch((err) => console.error(err));
+  };
+
   useEffect(() => {
     fetchUserToken();
     fetchAccounts();
+    fetchPosts();
   }, []);
+
+  // Add new post
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (socket !== null) {
+      socket.on("receive-post", (postObj) => {
+        if (!isCancelled) {
+          addNewPost(postObj);
+        }
+      });
+
+      socket.on("receive-account-update-data", (accountObj) => {
+        if (!isCancelled) {
+          updateAccountData(accountObj);
+          updatePostAccountData(accountObj);
+        }
+      });
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [socket]);
+
+  console.log(accounts);
 
   return (
     <div className="App">
@@ -195,9 +207,15 @@ function App() {
         <Route path="/notifications/" element={<Notification />} />
         <Route path="/friend-requests/" element={<FriendRequest />} />
         <Route path="/friend-list/" element={<FriendList />} />
-        <Route path="/profile/" element={<Profile />} />
-        <Route path="/profile/about/" element={<ProfileAbout />} />
-        <Route path="/profile/photos/" element={<ProfilePhotos />} />
+        <Route path="/profile/:uid/:username/" element={<Profile />} />
+        <Route
+          path="/profile/about/:uid/:username/"
+          element={<ProfileAbout />}
+        />
+        <Route
+          path="/profile/photos/:uid/:username/"
+          element={<ProfilePhotos />}
+        />
         <Route path="/edit-password/" element={<ChangePasswordText />} />
         <Route path="/active-account/" element={<ActiveAccount />} />
         <Route path="/edit-password/:token/" element={<EditPassword />} />

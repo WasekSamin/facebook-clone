@@ -96,7 +96,7 @@ const Register = () => {
       .post(`${MYAPI}/authentication/account-list/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: token,
+          Authorization: `token ${token}`,
         },
       })
       .then((res) => {
