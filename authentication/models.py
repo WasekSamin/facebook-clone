@@ -13,7 +13,7 @@ class AccountManager(BaseUserManager):
             return ValueError("Email field is required!")
         elif not username:
             return ValueError("Username field is required!")
-        
+
         email = self.normalize_email(email)
 
         user = self.model(email=email, username=username)
@@ -33,6 +33,16 @@ class AccountManager(BaseUserManager):
         user.is_staff = True
         user.is_superuser = True
         user.save()
+
+
+class UserProfilePic(models.Model):
+    uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
+    image = models.ImageField(upload_to="images/profile", null=True)
+    char_created_at = models.CharField(max_length=200, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return str(self.uid)
 
 
 class Account(AbstractBaseUser):
@@ -61,10 +71,18 @@ class Account(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     address = models.CharField(max_length=200, null=True, blank=True)
     phone_no = models.CharField(max_length=20, null=True, blank=True)
-    gender = models.CharField(max_length=20, choices=GENDER, null=True, blank=True)
-    working_status = models.CharField(max_length=50, choices=WORKING_STATUS, null=True, blank=True)
-    relation_status = models.CharField(max_length=30, choices=RELATION_STATUS, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    gender = models.CharField(
+        max_length=20, choices=GENDER, null=True, blank=True)
+    working_status = models.CharField(
+        max_length=50, choices=WORKING_STATUS, null=True, blank=True)
+    studying_at = models.CharField(max_length=120, null=True, blank=True)
+    job_position = models.CharField(max_length=120, null=True, blank=True)
+    working_at = models.CharField(max_length=120, null=True, blank=True)
+    relation_status = models.CharField(
+        max_length=30, choices=RELATION_STATUS, null=True, blank=True)
+    current_profile_pic = models.ImageField(
+        upload_to="images/profile", null=True, blank=True)
+    all_profile_pics = models.ManyToManyField(UserProfilePic, blank=True)
     char_created_at = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     char_updated_at = models.CharField(max_length=200, null=True, blank=True)
@@ -84,43 +102,20 @@ class Account(AbstractBaseUser):
     def __str__(self):
         return self.email
 
-@receiver(post_save, sender=Account)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
-
-
-class UserProfilePic(models.Model):
-    uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    image = models.ImageField(upload_to="images/profile", null=True)
-    char_created_at = models.CharField(max_length=200, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return str(self.uid)
-
-
-class AccountProfilePics(models.Model):
-    uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    user = models.OneToOneField(Account, on_delete=models.CASCADE)
-    current_profile_pic = models.ImageField(upload_to="images/profile", null=True, blank=True)
-    all_profile_pics = models.ManyToManyField(UserProfilePic, blank=True)
-    char_created_at = models.CharField(max_length=200, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    char_updated_at = models.CharField(max_length=200, null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-
-    def __str__(self):
-        return str(self.uid)
-
     def save(self):
-        super(AccountProfilePics, self).save()
+        super(Account, self).save()
 
         if self.current_profile_pic:
             img = Image.open(self.current_profile_pic.path)
             if img.width > 800 or img.height > 600:
-                img.resize((800, 600), Image.ANTIALIAS)
+                img = img.resize((800, 600), Image.ANTIALIAS)
                 img.save(self.current_profile_pic.path)
+
+
+@receiver(post_save, sender=Account)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
 
 
 class UpdatePassword(models.Model):

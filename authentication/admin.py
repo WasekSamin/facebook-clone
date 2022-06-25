@@ -1,23 +1,15 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Account, AccountProfilePics, UpdatePassword, UserProfilePic
+from .models import Account, UpdatePassword, UserProfilePic
 
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
     list_display = (
-        "uid", "email", "username",
+        "uid", "email", "username", "current_profile_pic",
         "is_active", "gender", "char_created_at",
         "char_updated_at"
-    )
-
-
-@admin.register(AccountProfilePics)
-class AccountProfilePicsAdmin(admin.ModelAdmin):
-    list_display = (
-        "uid", "user", "current_profile_pic",
-        "char_created_at", "char_updated_at"
     )
 
 

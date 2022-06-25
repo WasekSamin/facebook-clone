@@ -1,5 +1,6 @@
-from .models import Account, AccountProfilePics, UpdatePassword
-from .serializers import AccountSerializer, AccountProfilePicsSerializer, UpdatePasswordSerializer
+from .models import Account, UpdatePassword, UserProfilePic
+from post.models import Post
+from .serializers import AccountSerializer, UpdatePasswordSerializer, UserProfilePicSerializer
 from django.http import Http404, JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,7 +12,7 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.authtoken.models import Token
 from django.views import View
 from django.contrib.auth import authenticate, login
-from datetime import datetime
+from facebook_core.current_datetime import get_current_datetime
 
 
 # If account exists, return the account obj, else return None
@@ -32,13 +33,6 @@ def check_for_account_token(account_obj):
         return None
     else:
         return token_obj
-
-
-# Return datetime in string format
-def get_current_time():
-    dt = datetime.now()
-    dt = datetime.strftime(dt, "%d %b, %Y %I:%M:%S %p")
-    return dt
 
 
 class AccountList(APIView, CustomPagination):
@@ -72,7 +66,7 @@ class AccountList(APIView, CustomPagination):
                         "account_already_exist": True
                     }
                 else:
-                    current_datetime = get_current_time()
+                    current_datetime = get_current_datetime()
                     account_obj = Account(
                         username=username,
                         email=email,
@@ -124,7 +118,7 @@ class AccountDetail(APIView):
 
     def get_object(self, uid):
         try:
-            return Account.objects.get(pk=uid)
+            return Account.objects.get(uid=uid)
         except Account.DoesNotExist:
             raise Http404
 
@@ -134,12 +128,143 @@ class AccountDetail(APIView):
         return Response(serializer.data)
 
     def put(self, request, uid, format=None):
-        snippet = self.get_object(uid)
-        serializer = AccountSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        resp_msg = {
+            "error": True
+        }
+
+        profile_pic_upload = request.data.get("profilePicUpload", None)
+        edit_profile_data = request.data.get("editProfileData", None)
+
+        if profile_pic_upload == "true":
+            profile_pic = request.data.get("profilePic", None)
+            content_img_data = request.data.get("contentImgData", None)
+
+            if profile_pic is not None and content_img_data is not None:
+                try:
+                    account_obj = Account.objects.get(uid=uid)
+                except Account.DoesNotExist:
+                    return Response(resp_msg)
+                else:
+                    current_datetime = get_current_datetime()
+
+                    user_profile_pic_obj = UserProfilePic(
+                        image=profile_pic,
+                        char_created_at=current_datetime
+                    )
+                    user_profile_pic_obj.save()
+
+                    account_obj.current_profile_pic = profile_pic
+                    account_obj.save()
+
+                    account_obj.all_profile_pics.add(user_profile_pic_obj.uid)
+
+                    post_obj = Post(
+                        user=account_obj,
+                        content=f'''
+                            <p>
+                                <strong>{account_obj.username} updated the profile picture.</strong>
+                            </p>
+                            <p>
+                                <img src={content_img_data} />
+                            </p>
+                        ''',
+                        char_created_at=current_datetime
+                    )
+                    post_obj.save()
+
+                    resp_msg = {
+                        "error": False,
+                        "profile_pic_uploaded": True,
+                        "account_obj_uid": account_obj.uid,
+                        "post_obj_uid": post_obj.uid,
+                    }
+            else:
+                return Response(resp_msg)
+        elif edit_profile_data == "true":
+            user_uid = request.data.get("profileUid", None)
+            username = request.data.get("username", None)
+            address = request.data.get("address", None)
+            work_status = request.data.get("workStatus", None)
+            studying_at = request.data.get("studyingAt", None)
+            working_at = request.data.get("workingAt", None)
+            job_position = request.data.get("jobPosition", None)
+            phone_no = request.data.get("phoneNo", None)
+            gender = request.data.get("gender", None)
+            relation_status = request.data.get("relationStatus", None)
+
+            if username is not None and user_uid is not None:
+                try:
+                    account_obj = Account.objects.get(uid=user_uid)
+                except Account.DoesNotExist:
+                    return Response(resp_msg)
+                else:
+                    if phone_no == "null":
+                        phone_no = None
+                    if work_status == "null":
+                        work_status = None
+                    if gender == "null":
+                        gender = None
+                    if relation_status == "null":
+                        relation_status = None
+
+                    if phone_no is not None and len(phone_no) > 0:
+                        if phone_no[0] == "+":
+                            phone_first_char = phone_no[0]
+                            phone_no = phone_no[1:]
+
+                        try:
+                            phone_no = int(phone_no)
+                        except ValueError:
+                            resp_msg = {
+                                "error": True,
+                                "invalid_format": True
+                            }
+                            return Response(resp_msg)
+                        else:
+                            phone_no = f"{phone_first_char}{phone_no}"
+
+                    if work_status is not None:
+                        if work_status != "Studying" and work_status != "Working" and work_status != "Both" and work_status != "None":
+                            return Response(resp_msg)
+                        elif work_status == "Studying":
+                            working_at = None
+                        elif work_status == "Working":
+                            studying_at = None
+                        elif work_status == "None":
+                            working_at = None
+                            studying_at = None
+                    if gender is not None and (gender != "Male" and gender != "Female"):
+                        return Response(resp_msg)
+                    if relation_status is not None and (relation_status != "Single" and relation_status != "Married"):
+                        return Response(resp_msg)
+
+                    
+
+                    # Update account
+                    current_datetime = get_current_datetime()
+
+                    account_obj.username = username
+                    account_obj.address = address
+                    account_obj.working_status = work_status
+                    account_obj.studying_at = studying_at
+                    account_obj.working_at = working_at
+                    account_obj.job_position = job_position
+                    account_obj.phone_no = phone_no
+                    account_obj.gender = gender
+                    account_obj.relation_status = relation_status
+                    account_obj.char_updated_at = current_datetime
+
+                    account_obj.save()
+
+                    resp_msg = {
+                        "error": False,
+                        "account_updated": True,
+                        "account_obj_uid": account_obj.uid
+                    }
+                    return Response(resp_msg)
+            else:
+                return Response(resp_msg)
+        return Response(resp_msg)
 
     def delete(self, request, uid, format=None):
         snippet = self.get_object(uid)
@@ -184,62 +309,42 @@ class FetchTokenInfo(View):
         return JsonResponse(json_resp, safe=False)
 
 
-class FetchUserPostedPicsView(View):
-    def get(self, request, user_uid):
-        json_resp = {
-            "error": True
-        }
-
-        try:
-            account_profile__pic_obj = AccountProfilePics.objects.get(user__uid=user_uid)
-        except AccountProfilePics.DoesNotExist:
-            return JsonResponse(json_resp, safe=False)
-        else:
-            json_resp = {
-                "error": False,
-                "account_profile_pic_obj_found": True,
-                "account_profile_pic_obj_uid": account_profile__pic_obj.uid
-            }
-            return JsonResponse(json_resp, safe=False)
-        return JsonResponse(json_resp, safe=False)
-
-
-class AccountProfilePicList(APIView, CustomPagination):
+class UserProfilePicList(APIView, CustomPagination):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = AccountProfilePics.objects.all().order_by("-created_at")
+        snippets = UserProfilePic.objects.all().order_by("-created_at")
         results = self.paginate_queryset(snippets, request, view=self)
-        serializer = AccountProfilePicsSerializer(results, many=True)
+        serializer = UserProfilePicSerializer(results, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = AccountProfilePicsSerializer(data=request.data)
+        serializer = UserProfilePicSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AccountProfilePicDetail(APIView):
+class UserProfilePicDetail(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication, )
 
     def get_object(self, uid):
         try:
-            return AccountProfilePics.objects.get(uid=uid)
-        except AccountProfilePics.DoesNotExist:
+            return UserProfilePic.objects.get(uid=uid)
+        except UserProfilePic.DoesNotExist:
             raise Http404
 
     def get(self, request, uid, format=None):
         snippet = self.get_object(uid)
-        serializer = AccountProfilePicsSerializer(snippet)
+        serializer = UserProfilePicSerializer(snippet)
         return Response(serializer.data)
 
     def put(self, request, uid, format=None):
         snippet = self.get_object(uid)
-        serializer = AccountProfilePicsSerializer(snippet, data=request.data)
+        serializer = UserProfilePicSerializer(snippet, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -273,26 +378,26 @@ class UpdatePasswordDetail(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication, )
 
-    def get_object(self, pk):
+    def get_object(self, uid):
         try:
-            return UpdatePassword.objects.get(pk=pk)
+            return UpdatePassword.objects.get(uid=uid)
         except UpdatePassword.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
-        snippet = self.get_object(pk)
+    def get(self, request, uid, format=None):
+        snippet = self.get_object(uid)
         serializer = UpdatePasswordSerializer(snippet)
         return Response(serializer.data)
 
-    def put(self, request, pk, format=None):
-        snippet = self.get_object(pk)
+    def put(self, request, uid, format=None):
+        snippet = self.get_object(uid)
         serializer = UpdatePasswordSerializer(snippet, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, format=None):
-        snippet = self.get_object(pk)
+    def delete(self, request, uid, format=None):
+        snippet = self.get_object(uid)
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Account, AccountProfilePics, UpdatePassword
+from .models import Account, UpdatePassword, UserProfilePic
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -9,9 +9,9 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AccountProfilePicsSerializer(serializers.ModelSerializer):
+class UserProfilePicSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AccountProfilePics
+        model = UserProfilePic
         fields = "__all__"
         depth = 1
 
@@ -20,4 +20,5 @@ class UpdatePasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = UpdatePassword
         fields = "__all__"
+        depth = 1
 
