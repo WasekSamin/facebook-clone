@@ -174,7 +174,6 @@ const EditProfileModal = ({
         }
       )
       .then((res) => {
-        console.log(res.data);
         if (res.data.error && res.data.invalid_format) {
           toast.error("Phone Number should be in number format!");
           showErrorMsg(-1);

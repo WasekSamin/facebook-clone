@@ -1,5 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
@@ -16,7 +16,10 @@ import dummy1 from "../../dummy/images/img1.jpg";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import EditProfileModal from "../../components/profile/EditProfileModal";
-import { ProfileStore } from "../../components/store/Store";
+import { APIStore, ProfileStore } from "../../components/store/Store";
+import { colorTheme } from "../../components/colorTheme/ColorTheme";
+import axios from "axios";
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const ProfilePostLeftSidebar = () => {
   const [profileViewedImg, setProfileViewedImg] = useState(null);
@@ -25,6 +28,43 @@ const ProfilePostLeftSidebar = () => {
   const canCurrentProfileEditable = ProfileStore(
     (state) => state.canCurrentProfileEditable
   );
+  const MYAPI = APIStore((state) => state.MYAPI);
+  const [userProfilePics, setUserProfilePics] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchProfileAllProfilePics = async (userUid) => {
+    await axios
+      .get(`${MYAPI}/authentication/fetch-user-some-profile-pics/${userUid}/`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        if (res.data.error) {
+          setIsLoading(false);
+        } else if (!res.data.error && res.data.profile_pic_found) {
+          setUserProfilePics(res.data.profile_pics);
+        }
+      })
+      .catch((err) => console.error(err));
+
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    let isCancelled = false;
+    setIsLoading(true);
+
+    if (currentProfile !== null) {
+      if (!isCancelled) {
+        fetchProfileAllProfilePics(currentProfile.uid);
+      }
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentProfile]);
 
   const editProfileDetailsModal = () => {
     return (
@@ -132,17 +172,18 @@ const ProfilePostLeftSidebar = () => {
                   {currentProfile.username}
                 </Typography>
               </Stack>
-              {(currentProfile.address !== null && currentProfile.address !== "") && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <HomeOutlinedIcon style={{ color: "var(--slate-500)" }} />
-                  <Typography
-                    style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                    variant="p"
-                  >
-                    {currentProfile.address}
-                  </Typography>
-                </Stack>
-              )}
+              {currentProfile.address !== null &&
+                currentProfile.address !== "" && (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <HomeOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                    <Typography
+                      style={{ color: "var(--slate-600)", fontSize: "1rem" }}
+                      variant="p"
+                    >
+                      {currentProfile.address}
+                    </Typography>
+                  </Stack>
+                )}
               {currentProfile.working_status !== null && (
                 <Stack direction="row" spacing={1} alignItems="center">
                   <WorkOutlineOutlinedIcon
@@ -202,19 +243,20 @@ const ProfilePostLeftSidebar = () => {
                   </Typography>
                 </Stack>
               )}
-              {(currentProfile.phone_no !== null && currentProfile.phone_no !== "") && (
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <PhoneIphoneOutlinedIcon
-                    style={{ color: "var(--slate-500)" }}
-                  />
-                  <Typography
-                    style={{ color: "var(--slate-600)", fontSize: "1rem" }}
-                    variant="p"
-                  >
-                    {currentProfile.phone_no}
-                  </Typography>
-                </Stack>
-              )}
+              {currentProfile.phone_no !== null &&
+                currentProfile.phone_no !== "" && (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <PhoneIphoneOutlinedIcon
+                      style={{ color: "var(--slate-500)" }}
+                    />
+                    <Typography
+                      style={{ color: "var(--slate-600)", fontSize: "1rem" }}
+                      variant="p"
+                    >
+                      {currentProfile.phone_no}
+                    </Typography>
+                  </Stack>
+                )}
               {currentProfile.relation_status !== null && (
                 <Stack direction="row" spacing={1} alignItems="center">
                   <FavoriteBorderOutlinedIcon
@@ -295,38 +337,36 @@ const ProfilePostLeftSidebar = () => {
           </Stack>
 
           {/* ONLY SHOW 9 IMAGES */}
-          <div className="profile__sidebarPhotosGrid">
-            <div
-              onClick={() => setProfileViewedImg(1)}
-              className="profile__sidebarPhoto"
-            >
-              <img src={dummy1} alt="" />
+          {userProfilePics.length > 0 ? (
+            <div className="profile__sidebarPhotosGrid">
+              {userProfilePics.map((profilePic) => (
+                <div
+                  key={profilePic.uid}
+                  onClick={() => setProfileViewedImg(profilePic.image)}
+                  className="profile__sidebarPhoto"
+                >
+                  <img src={`${MYAPI}${profilePic.image}`} alt="" />
+                </div>
+              ))}
             </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-            <div className="profile__sidebarPhoto">
-              <img src={dummy1} alt="" />
-            </div>
-          </div>
+          ) : isLoading ? (
+            <Stack direction="row" justifyContent="center">
+              <RefreshIcon className="profile__allPicsSpinner" style={{ color: "var(--slate-500)", marginBottom: "1rem" }} />
+            </Stack>
+          ) : (
+            <Stack direction="row" justifyContent="center">
+              <Typography
+                variant="p"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: "1rem",
+                  color: `${colorTheme.palette.secondary.main}`,
+                }}
+              >
+                No Picture found yet!
+              </Typography>
+            </Stack>
+          )}
         </Stack>
 
         {/* Friends */}

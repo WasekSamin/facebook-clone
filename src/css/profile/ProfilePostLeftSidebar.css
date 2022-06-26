@@ -26,6 +26,20 @@
     text-overflow: ellipsis;
 }
 
+.profile__allPicsSpinner {
+    animation: profile_all_pics_spinner 1s linear infinite;
+}
+
+@keyframes profile_all_pics_spinner {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @media (max-width: 991px) {
     .profile__sidebarPhoto {
         height: 80px;

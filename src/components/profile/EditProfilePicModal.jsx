@@ -132,7 +132,6 @@ const EditProfilePicModal = ({
           Authorization: `token ${token}`
         }
       }).then(res => {
-        console.log(res.data);
         if (res.data.error) {
           alert("Failed to upload image! Something went wrong...");
         } else if (!res.data.error && res.data.profile_pic_uploaded) {

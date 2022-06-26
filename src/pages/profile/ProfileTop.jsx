@@ -154,7 +154,7 @@ const ProfileTop = () => {
         >
           <div id="profile__userImgMainDiv">
             <div
-              onClick={() => setProfileViewedImg(1)}
+              onClick={() => setProfileViewedImg(currentProfile.current_profile_pic)}
               id="profile__userMainImg"
             >
               <img
