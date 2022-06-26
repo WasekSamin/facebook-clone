@@ -7,6 +7,7 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = "__all__"
+        depth = 1
 
 
 class UserProfilePicSerializer(serializers.ModelSerializer):

@@ -5,6 +5,7 @@ from .views import (
     UserProfilePicList, UserProfilePicDetail,
     UpdatePasswordDetail, UpdatePasswordList,
     CheckForValidToken, FetchTokenInfo,
+    FetchUserProfileSomePicsView, FetchUserAllProfilePicsView
 )
 
 
@@ -18,4 +19,6 @@ urlpatterns = [
     path("update-password-detail/<int:pk>/", UpdatePasswordDetail.as_view()),
     path("check-for-token-validation/<str:token>/", CheckForValidToken.as_view()),
     path("fetch-user-info/<str:token>/", FetchTokenInfo.as_view()),
+    path("fetch-user-some-profile-pics/<str:user_uid>/", FetchUserProfileSomePicsView.as_view()),
+    path("fetch-user-all-profile-pics/<str:user_uid>/<int:number_of_pics>/", FetchUserAllProfilePicsView.as_view()),
 ]

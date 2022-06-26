@@ -112,6 +112,15 @@ class AccountList(APIView, CustomPagination):
         return Response(resp_msg)
 
 
+def get_account_obj_using_uid(user_uid):
+    try:
+        account_obj = Account.objects.get(uid=user_uid)
+    except Account.DoesNotExist:
+        return None
+    else:
+        return account_obj
+
+
 class AccountDetail(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication, )
@@ -140,9 +149,9 @@ class AccountDetail(APIView):
             content_img_data = request.data.get("contentImgData", None)
 
             if profile_pic is not None and content_img_data is not None:
-                try:
-                    account_obj = Account.objects.get(uid=uid)
-                except Account.DoesNotExist:
+                account_obj = get_account_obj_using_uid(uid)
+
+                if account_obj is None:
                     return Response(resp_msg)
                 else:
                     current_datetime = get_current_datetime()
@@ -193,9 +202,9 @@ class AccountDetail(APIView):
             relation_status = request.data.get("relationStatus", None)
 
             if username is not None and user_uid is not None:
-                try:
-                    account_obj = Account.objects.get(uid=user_uid)
-                except Account.DoesNotExist:
+                account_obj = get_account_obj_using_uid(user_uid)
+
+                if account_obj is None:
                     return Response(resp_msg)
                 else:
                     if phone_no == "null":
@@ -228,17 +237,17 @@ class AccountDetail(APIView):
                             return Response(resp_msg)
                         elif work_status == "Studying":
                             working_at = None
+                            job_position = None
                         elif work_status == "Working":
                             studying_at = None
                         elif work_status == "None":
                             working_at = None
                             studying_at = None
+                            job_position = None
                     if gender is not None and (gender != "Male" and gender != "Female"):
                         return Response(resp_msg)
                     if relation_status is not None and (relation_status != "Single" and relation_status != "Married"):
                         return Response(resp_msg)
-
-                    
 
                     # Update account
                     current_datetime = get_current_datetime()
@@ -305,6 +314,66 @@ class FetchTokenInfo(View):
             }
         except Token.DoesNotExist:
             return JsonResponse(json_resp, safe=False)
+
+        return JsonResponse(json_resp, safe=False)
+
+
+# Only grab 9 photos order by "-created_at"
+class FetchUserProfileSomePicsView(View):
+    def get(self, request, user_uid):
+        json_resp = {
+            "error": True
+        }
+
+        account_obj = get_account_obj_using_uid(user_uid)
+
+        if account_obj is None:
+            return JsonResponse(json_resp, safe=False)
+        else:
+            profile_pics = account_obj.all_profile_pics.all().order_by("-created_at")[0:9]
+            profile_pic_list = list(map(lambda pic: {
+                "uid": pic.uid,
+                "image": pic.image.url if pic.image else None,
+                "char_created_at": pic.char_created_at,
+                "created_at": pic.created_at
+            }, profile_pics))
+
+            json_resp = {
+                "error": False,
+                "profile_pic_found": True,
+                "profile_pics": profile_pic_list
+            }
+
+        return JsonResponse(json_resp, safe=False)
+
+
+class FetchUserAllProfilePicsView(View):
+    def get(self, request, user_uid, number_of_pics):
+        json_resp = {
+            "error": False
+        }
+
+        account_obj = get_account_obj_using_uid(user_uid)
+
+        if account_obj is None:
+            return JsonResponse(json_resp, safe=False)
+        else:
+            upper = number_of_pics
+            lower = upper - 3
+
+            profile_pics = account_obj.all_profile_pics.all().order_by("-created_at")[lower:upper]
+            profile_pic_list = list(map(lambda pic: {
+                "uid": pic.uid,
+                "image": pic.image.url if pic.image else None,
+                "char_created_at": pic.char_created_at,
+                "created_at": pic.created_at
+            }, profile_pics))
+
+            json_resp = {
+                "error": False,
+                "profile_pic_found": True,
+                "profile_pics": profile_pic_list
+            }
 
         return JsonResponse(json_resp, safe=False)
 
