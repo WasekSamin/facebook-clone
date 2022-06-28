@@ -35,9 +35,10 @@ class ProfileUserPostView(View):
         account_obj = fetch_account_obj_using_uid(user_uid)
 
         if account_obj is None:
-            return JsonResponse(json_resp)
+            return JsonResponse(json_resp, safe=False)
         
         post_objs = Post.objects.filter(user=account_obj).order_by("-created_at")[lower:upper]
+
         post_obj_list = list(map(
             lambda item: {
                 "uid": item.uid,
@@ -51,7 +52,7 @@ class ProfileUserPostView(View):
                     "studying_at": item.user.studying_at,
                     "working_at": item.user.working_at,
                     "job_position": item.user.job_position,
-                    "current_profile_pic": item.user.current_profile_pic.url if item.user.current_profile_pic is not None else None, 
+                    "current_profile_pic": item.user.current_profile_pic.url if item.user.current_profile_pic else None, 
                     "gender": item.user.gender,
                     "relation_status": item.user.relation_status,
                     "char_created_at": item.user.char_created_at,

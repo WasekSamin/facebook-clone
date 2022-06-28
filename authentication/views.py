@@ -353,6 +353,8 @@ class FetchUserAllProfilePicsView(View):
             "error": False
         }
 
+        print("NUMBER OF PICS:", number_of_pics)
+
         account_obj = get_account_obj_using_uid(user_uid)
 
         if account_obj is None:
@@ -361,6 +363,8 @@ class FetchUserAllProfilePicsView(View):
             upper = number_of_pics
             lower = upper - 3
 
+            print(f"{upper=}, {lower=}")
+
             profile_pics = account_obj.all_profile_pics.all().order_by("-created_at")[lower:upper]
             profile_pic_list = list(map(lambda pic: {
                 "uid": pic.uid,
@@ -368,6 +372,8 @@ class FetchUserAllProfilePicsView(View):
                 "char_created_at": pic.char_created_at,
                 "created_at": pic.created_at
             }, profile_pics))
+
+            print(len(profile_pic_list))
 
             json_resp = {
                 "error": False,

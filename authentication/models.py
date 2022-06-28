@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from PIL import Image
+from django.conf import settings
 
 
 class AccountManager(BaseUserManager):
@@ -102,14 +103,14 @@ class Account(AbstractBaseUser):
     def __str__(self):
         return self.email
 
-    def save(self):
-        super(Account, self).save()
+    # def save(self):
+    #     super(Account, self).save()
 
-        if self.current_profile_pic:
-            img = Image.open(self.current_profile_pic.path)
-            if img.width > 800 or img.height > 600:
-                img = img.resize((800, 600), Image.ANTIALIAS)
-                img.save(self.current_profile_pic.path)
+    #     if self.current_profile_pic:
+    #         img = Image.open(self.current_profile_pic.path)
+    #         if img.width > 800 or img.height > 600:
+    #             img = img.resize((800, 600), Image.ANTIALIAS)
+    #             img.save(self.current_profile_pic.path)
 
 
 @receiver(post_save, sender=Account)
