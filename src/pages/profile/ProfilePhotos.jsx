@@ -1,14 +1,14 @@
 import { Stack, Typography, Container } from "@mui/material";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../../components/navbar/Navbar";
 import ProfilePages from "./ProfilePages";
 import ProfileTop from "./ProfileTop";
 import "../../css/profile/ProfilePhotos.css";
-import dummy1 from "../../dummy/images/img1.jpg";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import {
+  AccountStore,
   APIStore,
   ProfileStore,
   TokenStore,
@@ -18,7 +18,7 @@ import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 const ProfilePhotos = () => {
-  const profleAllPhotosRef = useRef(null);
+  const profileAllPhotosRef = useRef(null);
   const [profileViewedImg, setProfileViewedImg] = useState(null);
   const currentProfile = ProfileStore((state) => state.currentProfile);
   const MYAPI = APIStore((state) => state.MYAPI);
@@ -26,11 +26,22 @@ const ProfilePhotos = () => {
     (state) => state.updateCurrentProfile
   );
   const token = TokenStore((state) => state.token);
-  const [numberOfProfilePics, setNumberOfProfilePics] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [userProfilePics, setUserProfilePics] = useState([]);
+  const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+  const updateCanCurrentProfileEditable = ProfileStore(
+    (state) => state.updateCanCurrentProfileEditable
+  );
+  const [loadMorePics, setLoadMorePics] = useState(true);
 
   const paramData = useParams();
+
+  useEffect(() => {
+    localStorage.setItem(
+      "user_storage_settings",
+      JSON.stringify({ number_of_pics: 3 })
+    );
+  }, []);
 
   const fetchProfileData = (userUid) => {
     axios
@@ -62,8 +73,7 @@ const ProfilePhotos = () => {
     };
   }, [paramData]);
 
-  const fetchProfileAllProfilePics = async (userUid) => {
-    console.log(numberOfProfilePics);
+  const fetchProfileAllProfilePics = async (userUid, numberOfProfilePics) => {
     await axios
       .get(
         `${MYAPI}/authentication/fetch-user-all-profile-pics/${userUid}/${numberOfProfilePics}/`,
@@ -77,10 +87,13 @@ const ProfilePhotos = () => {
         if (res.data.error) {
           setIsLoading(false);
         } else if (!res.data.error && res.data.profile_pic_found) {
-          if (numberOfProfilePics > 3) {
-            setUserProfilePics((prev) => [...prev, ...res.data.profile_pics]);
-          } else {
-            setUserProfilePics(res.data.profile_pics);
+          console.log(res.data.profile_pics);
+          if (res.data.profile_pics.length > 0) {
+            if (userProfilePics.length === 0) {
+              setUserProfilePics(res.data.profile_pics);
+            } else {
+              setUserProfilePics((prev) => [...prev, ...res.data.profile_pics]);
+            }
           }
         }
       })
@@ -95,35 +108,74 @@ const ProfilePhotos = () => {
 
     if (currentProfile !== null) {
       if (!isCancelled) {
-        fetchProfileAllProfilePics(currentProfile.uid);
+        const localStorageVal =
+          localStorage.getItem("user_storage_settings") &&
+          JSON.parse(localStorage.getItem("user_storage_settings"));
+
+        if (localStorageVal) {
+          const numberOfPics = localStorageVal["number_of_pics"];
+
+          userProfilePics.length === 0 &&
+            fetchProfileAllProfilePics(currentProfile.uid, numberOfPics);
+        }
+      }
+
+      if (
+        loggedInUserInfo !== null &&
+        loggedInUserInfo.uid === currentProfile.uid
+      ) {
+        if (!isCancelled) {
+          updateCanCurrentProfileEditable(true);
+        }
+      } else {
+        if (!isCancelled) {
+          updateCanCurrentProfileEditable(false);
+        }
       }
     }
 
     return () => {
       isCancelled = true;
     };
-  }, [currentProfile]);
+  }, [currentProfile, loggedInUserInfo]);
 
-  const objectObserver = new IntersectionObserver((entries, objectObserver) => {
-    let objObservedArr = [];
+  const objectObserver = new IntersectionObserver(
+    (entries, objectObserver) => {
+      let objObservedArr = [];
 
-    entries.forEach((entry) => {
-      console.log(entry.isIntersecting);
-      if (!entry.isIntersecting) return;
-      objObservedArr.push(entry.isIntersecting);
-      objectObserver.unobserve(entry.target);
-    });
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        objObservedArr.push(entry.isIntersecting);
+        objectObserver.unobserve(entry.target);
 
-    if (objObservedArr.length === 3 && currentProfile !== null) {
-      setNumberOfProfilePics(numberOfProfilePics + 3);
-      fetchProfileAllProfilePics(currentProfile.uid, numberOfProfilePics + 3);
-      objObservedArr = [];
+        if (objObservedArr.length >= 3 && currentProfile !== null) {
+          const localStorageVal =
+            localStorage.getItem("user_storage_settings") &&
+            JSON.parse(localStorage.getItem("user_storage_settings"));
+
+          if (localStorageVal) {
+            const numberOfPics = localStorageVal["number_of_pics"];
+            localStorage.setItem(
+              "user_storage_settings",
+              JSON.stringify({
+                number_of_pics: numberOfPics + 3,
+              })
+            );
+
+            fetchProfileAllProfilePics(currentProfile.uid, numberOfPics + 3);
+          }
+          objObservedArr = [];
+        }
+      });
+    },
+    {
+      threshold: 0.3,
     }
-  });
+  );
 
   const lazyLoadObjects = () => {
-    if (profleAllPhotosRef.current !== null) {
-      const imgDivs = profleAllPhotosRef.current.querySelectorAll(
+    if (profileAllPhotosRef.current !== null) {
+      const imgDivs = profileAllPhotosRef.current.querySelectorAll(
         ".profile__photoImgDiv"
       );
 
@@ -134,7 +186,15 @@ const ProfilePhotos = () => {
   };
 
   useEffect(() => {
-    lazyLoadObjects();
+    let isCancelled = false;
+
+    if (!isCancelled) {
+      lazyLoadObjects();
+    }
+
+    return () => {
+      isCancelled = true;
+    }
   }, [userProfilePics]);
 
   const profileImageViewModal = () => {
@@ -193,7 +253,7 @@ const ProfilePhotos = () => {
               </Typography>
 
               {userProfilePics.length > 0 ? (
-                <div ref={profleAllPhotosRef} id="profile__allPhotosDiv">
+                <div ref={profileAllPhotosRef} id="profile__allPhotosDiv">
                   {userProfilePics.map((profilePic) => (
                     <div
                       key={profilePic.uid}
