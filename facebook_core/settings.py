@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "ckeditor",
     "authentication.apps.AuthenticationConfig",
     "post.apps.PostConfig",
+    "friend.apps.FriendConfig",
+    "notification.apps.NotificationConfig",
 ]
 
 MIDDLEWARE = [

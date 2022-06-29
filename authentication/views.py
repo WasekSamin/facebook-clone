@@ -353,17 +353,13 @@ class FetchUserAllProfilePicsView(View):
             "error": False
         }
 
-        print("NUMBER OF PICS:", number_of_pics)
-
         account_obj = get_account_obj_using_uid(user_uid)
 
         if account_obj is None:
             return JsonResponse(json_resp, safe=False)
         else:
             upper = number_of_pics
-            lower = upper - 3
-
-            print(f"{upper=}, {lower=}")
+            lower = upper - 5
 
             profile_pics = account_obj.all_profile_pics.all().order_by("-created_at")[lower:upper]
             profile_pic_list = list(map(lambda pic: {
@@ -373,12 +369,11 @@ class FetchUserAllProfilePicsView(View):
                 "created_at": pic.created_at
             }, profile_pics))
 
-            print(len(profile_pic_list))
-
             json_resp = {
                 "error": False,
                 "profile_pic_found": True,
-                "profile_pics": profile_pic_list
+                "profile_pics": profile_pic_list,
+                "account_current_profile_pic": account_obj.current_profile_pic.url if account_obj.current_profile_pic else "No Image Yet"
             }
 
         return JsonResponse(json_resp, safe=False)

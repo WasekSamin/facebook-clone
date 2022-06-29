@@ -5,7 +5,7 @@ from .views import (
     UserProfilePicList, UserProfilePicDetail,
     UpdatePasswordDetail, UpdatePasswordList,
     CheckForValidToken, FetchTokenInfo,
-    FetchUserProfileSomePicsView, FetchUserAllProfilePicsView
+    FetchUserProfileSomePicsView, FetchUserAllProfilePicsView,
 )
 
 
