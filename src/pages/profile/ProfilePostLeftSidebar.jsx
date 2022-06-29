@@ -19,7 +19,7 @@ import EditProfileModal from "../../components/profile/EditProfileModal";
 import { APIStore, ProfileStore } from "../../components/store/Store";
 import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import axios from "axios";
-import RefreshIcon from '@mui/icons-material/Refresh';
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 const ProfilePostLeftSidebar = () => {
   const [profileViewedImg, setProfileViewedImg] = useState(null);
@@ -30,7 +30,8 @@ const ProfilePostLeftSidebar = () => {
   );
   const MYAPI = APIStore((state) => state.MYAPI);
   const [userProfilePics, setUserProfilePics] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [profileAboutIsLoading, setProfileAboutIsLoading] = useState(false);
+  const [profilePicIsLoading, setProfilePicIsLoading] = useState(false);
 
   const fetchProfileAllProfilePics = async (userUid) => {
     await axios
@@ -41,21 +42,24 @@ const ProfilePostLeftSidebar = () => {
       })
       .then((res) => {
         if (res.data.error) {
-          setIsLoading(false);
+          setProfilePicIsLoading(false);
         } else if (!res.data.error && res.data.profile_pic_found) {
           setUserProfilePics(res.data.profile_pics);
         }
       })
       .catch((err) => console.error(err));
 
-    setIsLoading(false);
+    setProfilePicIsLoading(false);
   };
 
   useEffect(() => {
     let isCancelled = false;
-    setIsLoading(true);
+    setProfileAboutIsLoading(true);
+    setProfilePicIsLoading(true);
 
     if (currentProfile !== null) {
+      setProfileAboutIsLoading(false);
+
       if (!isCancelled) {
         fetchProfileAllProfilePics(currentProfile.uid);
       }
@@ -144,22 +148,22 @@ const ProfilePostLeftSidebar = () => {
       {editProfileDetailsModal()}
 
       <Stack direction="column" spacing={2}>
-        {currentProfile !== null && (
-          <Stack
-            direction="column"
-            spacing={1}
-            style={{
-              backgroundColor: "white",
-              padding: "10px",
-              borderRadius: "10px",
-            }}
+        <Stack
+          direction="column"
+          spacing={1}
+          style={{
+            backgroundColor: "white",
+            padding: "10px",
+            borderRadius: "10px",
+          }}
+        >
+          <Typography
+            variant="h6"
+            style={{ fontWeight: "600", marginBottom: "0.5rem" }}
           >
-            <Typography
-              variant="h6"
-              style={{ fontWeight: "600", marginBottom: "0.5rem" }}
-            >
-              Intro
-            </Typography>
+            Intro
+          </Typography>
+          {!profileAboutIsLoading && currentProfile !== null ? (
             <Stack direction="column" spacing={1.5}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <PersonOutlineOutlinedIcon
@@ -276,7 +280,13 @@ const ProfilePostLeftSidebar = () => {
               )}
               {currentProfile.gender !== null && (
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <MaleOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                  {currentProfile.gender === "Male" ||
+                  currentProfile.gender === "Other" ? (
+                    <MaleOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                  ) : (
+                    <FemaleOutlinedIcon style={{ color: "var(--slate-500)" }} />
+                  )}
+
                   <Typography
                     style={{
                       color: "var(--slate-600)",
@@ -290,22 +300,27 @@ const ProfilePostLeftSidebar = () => {
                 </Stack>
               )}
             </Stack>
+          ) : (
+            <Stack direction="row" justifyContent="center">
+              <RefreshIcon
+                className="profile__allPicsSpinner"
+                style={{ color: "var(--slate-500)", marginBottom: "1rem" }}
+              />
+            </Stack>
+          )}
 
-            {canCurrentProfileEditable && (
-              <Button
-                variant="contained"
-                color="success"
-                style={{ marginTop: "1.5rem" }}
-                onClick={() => setShowEditProfileModal(true)}
-              >
-                <ModeEditOutlineOutlinedIcon
-                  style={{ marginRight: "0.12rem" }}
-                />{" "}
-                Edit Details
-              </Button>
-            )}
-          </Stack>
-        )}
+          {canCurrentProfileEditable && (
+            <Button
+              variant="contained"
+              color="success"
+              style={{ marginTop: "1.5rem" }}
+              onClick={() => setShowEditProfileModal(true)}
+            >
+              <ModeEditOutlineOutlinedIcon style={{ marginRight: "0.12rem" }} />{" "}
+              Edit Details
+            </Button>
+          )}
+        </Stack>
 
         {/* Photos */}
         <Stack
@@ -349,9 +364,12 @@ const ProfilePostLeftSidebar = () => {
                 </div>
               ))}
             </div>
-          ) : isLoading ? (
+          ) : profilePicIsLoading ? (
             <Stack direction="row" justifyContent="center">
-              <RefreshIcon className="profile__allPicsSpinner" style={{ color: "var(--slate-500)", marginBottom: "1rem" }} />
+              <RefreshIcon
+                className="profile__allPicsSpinner"
+                style={{ color: "var(--slate-500)", marginBottom: "1rem" }}
+              />
             </Stack>
           ) : (
             <Stack direction="row" justifyContent="center">
@@ -363,7 +381,7 @@ const ProfilePostLeftSidebar = () => {
                   color: `${colorTheme.palette.secondary.main}`,
                 }}
               >
-                No Picture found yet!
+                No picture found yet!
               </Typography>
             </Stack>
           )}

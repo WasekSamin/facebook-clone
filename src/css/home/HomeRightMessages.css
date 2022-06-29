@@ -28,7 +28,7 @@
 }
 
 #home__rightAllMessages {
-  height: calc(100% - 95px);
+  height: calc(100% - 100px);
   overflow-x: hidden;
   overflow-y: auto;
 }

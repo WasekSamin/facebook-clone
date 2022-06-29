@@ -4,11 +4,11 @@ import "../../css/profile/ProfileTop.css";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 import { Button, Stack, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 import EditProfilePicModal from "../../components/profile/EditProfilePicModal";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import {
   APIStore,
   ProfileStore,
@@ -255,7 +255,7 @@ const ProfileTop = () => {
           </div>
         </Stack>
 
-        {canCurrentProfileEditable && (
+        {canCurrentProfileEditable ? (
           <Button
             className="profile__topEditUserInfoBtn"
             variant="contained"
@@ -265,7 +265,15 @@ const ProfileTop = () => {
             <ModeEditOutlineOutlinedIcon style={{ marginRight: "0.12rem" }} />
             Edit Profile
           </Button>
-        )}
+        ) : <Button
+        className="profile__topEditUserInfoBtn"
+        variant="contained"
+        color="secondary"
+        onClick={() => setShowEditProfileModal(true)}
+      >
+        <PersonAddIcon style={{ marginRight: "0.12rem" }} />
+        Add Friend
+      </Button>}
       </Stack>
     </div>
   );

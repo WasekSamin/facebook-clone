@@ -22,13 +22,19 @@ const CreatePostModal = ({ openCreatePostModal, setOpenCreatePostModal }) => {
   const token = TokenStore((state) => state.token);
   const addNewPost = PostStore((state) => state.addNewPost);
   const socket = SocketStore((state) => state.socket);
+  const [
+    createPostSubmitBtnDisabled,
+    setCreatePostSubmitBtnDisabled,
+  ] = useState(false);
 
   const createPost = () => {
     if (createPostRef.current !== null) {
       setIsLoading(true);
+      setCreatePostSubmitBtnDisabled(true);
 
       if (createPostRef.current.getContent().trim() === "") {
         setIsLoading(false);
+        setCreatePostSubmitBtnDisabled(false);
       } else {
         createUserPost({
           userUid: loggedInUserInfo.uid,
@@ -55,6 +61,7 @@ const CreatePostModal = ({ openCreatePostModal, setOpenCreatePostModal }) => {
         if (res.data.error) {
           alert("Failed to post, something went wrong!");
           setIsLoading(false);
+          setCreatePostSubmitBtnDisabled(false);
         } else if (!res.data.error && res.data.post_created) {
           getCreatedPostObj(res.data.post_uid);
         }
@@ -77,6 +84,7 @@ const CreatePostModal = ({ openCreatePostModal, setOpenCreatePostModal }) => {
         socket.emit("post-created", res.data);
       })
       .catch((err) => console.error(err));
+    setCreatePostSubmitBtnDisabled(false);
   }
 
   return (
@@ -143,6 +151,7 @@ const CreatePostModal = ({ openCreatePostModal, setOpenCreatePostModal }) => {
           />
         </div>
         <Button
+          disabled={createPostSubmitBtnDisabled}
           style={{
             width: "100%",
             paddingTop: "10px",

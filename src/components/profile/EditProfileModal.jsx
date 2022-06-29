@@ -51,6 +51,7 @@ const EditProfileModal = ({
     (state) => state.updateLoggedInUserInfo
   );
   const socket = SocketStore((state) => state.socket);
+  const canCurrentProfileEditable = ProfileStore(state => state.canCurrentProfileEditable);
 
   const closeEditProfileModal = (event) => {
     if (
@@ -236,7 +237,7 @@ const EditProfileModal = ({
               <Stack direction="column" spacing={0.5}>
                 <TextField
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => canCurrentProfileEditable && setUsername(e.target.value)}
                   id="username"
                   label="Username..."
                   variant="outlined"
@@ -252,7 +253,7 @@ const EditProfileModal = ({
               </Stack>
               <TextField
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => canCurrentProfileEditable && setAddress(e.target.value)}
                 id="address"
                 label="Address..."
                 variant="outlined"
@@ -269,7 +270,7 @@ const EditProfileModal = ({
                   defaultValue={workStatus !== null ? workStatus : "Studying"}
                   name="radio-buttons-group"
                   value={workStatus}
-                  onChange={(e) => setWorkStatus(e.target.value)}
+                  onChange={(e) => canCurrentProfileEditable && setWorkStatus(e.target.value)}
                 >
                   <FormControlLabel
                     value="Studying"
@@ -298,7 +299,7 @@ const EditProfileModal = ({
                 <Stack direction="column" spacing={0.5}>
                   <TextField
                     value={studyingAt}
-                    onChange={(e) => setStudyingAt(e.target.value)}
+                    onChange={(e) => canCurrentProfileEditable && setStudyingAt(e.target.value)}
                     id="studying_place"
                     label="Studying At..."
                     variant="outlined"
@@ -317,7 +318,7 @@ const EditProfileModal = ({
                   <Stack direction="column" spacing={0.5}>
                     <TextField
                       value={jobPosition}
-                      onChange={(e) => setJobPosition(e.target.value)}
+                      onChange={(e) => canCurrentProfileEditable && setJobPosition(e.target.value)}
                       id="working__position"
                       label="Job/Working Position..."
                       variant="outlined"
@@ -336,7 +337,7 @@ const EditProfileModal = ({
                   <Stack direction="column" spacing={0.5}>
                     <TextField
                       value={workingAt}
-                      onChange={(e) => setWorkingAt(e.target.value)}
+                      onChange={(e) => canCurrentProfileEditable && setWorkingAt(e.target.value)}
                       id="working__place"
                       label="Working At..."
                       variant="outlined"
@@ -356,7 +357,7 @@ const EditProfileModal = ({
 
               <TextField
                 value={phoneNo}
-                onChange={(e) => setPhoneNo(e.target.value)}
+                onChange={(e) => canCurrentProfileEditable && setPhoneNo(e.target.value)}
                 id="profile__phnNo"
                 label="Phone No..."
                 variant="outlined"
@@ -370,7 +371,7 @@ const EditProfileModal = ({
                   defaultValue={gender !== null ? gender : "Male"}
                   name="radio-buttons-group"
                   value={gender}
-                  onChange={(e) => setGender(e.target.value)}
+                  onChange={(e) => canCurrentProfileEditable && setGender(e.target.value)}
                 >
                   <FormControlLabel
                     value="Male"
@@ -402,7 +403,7 @@ const EditProfileModal = ({
                   }
                   name="radio-buttons-group"
                   value={relationStatus}
-                  onChange={(e) => setRelationStatus(e.target.value)}
+                  onChange={(e) => canCurrentProfileEditable && setRelationStatus(e.target.value)}
                 >
                   <FormControlLabel
                     value="Single"

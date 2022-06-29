@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
 import Login from "./pages/authentication/Login";
@@ -17,6 +17,7 @@ import ActiveAccount from "./pages/authentication/ActiveAccount";
 import {
   AccountStore,
   APIStore,
+  FriendStore,
   PostStore,
   SocketStore,
   TokenStore,
@@ -44,8 +45,10 @@ function App() {
   const accounts = AccountStore((state) => state.accounts);
   const addAllPosts = PostStore((state) => state.addAllPosts);
   const addNewPost = PostStore((state) => state.addNewPost);
-  const updateAccountData = AccountStore(state => state.updateAccountData);
-  const updatePostAccountData = PostStore(state => state.updatePostAccountData);
+  const updateAccountData = AccountStore((state) => state.updateAccountData);
+  const updatePostAccountData = PostStore(
+    (state) => state.updatePostAccountData
+  );
 
   // Connecting socket
   const socketConnection = (userToken) => {
@@ -168,6 +171,10 @@ function App() {
     fetchUserToken();
     fetchAccounts();
     fetchPosts();
+
+    localStorage.setItem("user_storage_settings", JSON.stringify({
+      friend_requests: 5, pic_requests: 5
+    }))
   }, []);
 
   // Add new post
@@ -177,6 +184,7 @@ function App() {
     if (socket !== null) {
       socket.on("receive-post", (postObj) => {
         if (!isCancelled) {
+          // Note Pending: Sent a get request to see if the receiver is a friend of the posted user //
           addNewPost(postObj);
         }
       });
@@ -194,7 +202,7 @@ function App() {
     };
   }, [socket]);
 
-  console.log(accounts);
+  // console.log(accounts);
 
   return (
     <div className="App">

@@ -130,3 +130,17 @@ export const ProfileStore = create((set) => ({
       canCurrentProfileEditable: editable,
     })),
 }));
+
+export const FriendStore = create((set) => ({
+  // For logged in user
+  userFriends: [],
+  addUserFriends: (friends) => set((state) => ({
+    userFriends: friends
+  })),
+  addFriend: (account) => set((state) => ({
+    userFriends: [account, ...state.userFriends],
+  })),
+  removeFriend: (account) => set((state) => ({
+    userFriends: state.userFriends.filter(friend => friend.user.uid !== account.uid)
+  }))
+}))
