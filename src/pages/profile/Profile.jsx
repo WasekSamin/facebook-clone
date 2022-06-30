@@ -1,5 +1,5 @@
 import { Container, Grid } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import ProfileTop from "./ProfileTop";
 import "../../css/profile/Profile.css";
@@ -36,6 +36,19 @@ const Profile = () => {
     (state) => state.addCurrentProfileAllPosts
   );
   const [showNumberOfProfilePosts, setShowNumberOfProfilePosts] = useState(3);
+  const updateCheckProfileFriendOptionWithUser = ProfileStore(
+    (state) => state.updateCheckProfileFriendOptionWithUser
+  );
+  const updateLoadingFriendOption = ProfileStore(
+    (state) => state.updateLoadingFriendOption
+  );
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
 
   // Fetching profile posts -> 3 posts for now
   const fetchProfilePosts = (userUid) => {
@@ -87,6 +100,56 @@ const Profile = () => {
     };
   }, [paramData]);
 
+  const fetchCurrentProfileFriendOptionWithUser = async (
+    userUid,
+    profileUid
+  ) => {
+    updateLoadingFriendOption(true);
+
+    await axios
+      .get(
+        `${MYAPI}/friend/fetch-current-profile-friend-option-with-user/${userUid}/${profileUid}/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        if (!res.data.error && res.data.user_is_friend) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: true,
+            sendFriendRequest: false,
+            receiveFriendRequest: false,
+          });
+        } else if (!res.data.error && res.data.user_is_in_friend_request) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: true,
+            receiveFriendRequest: false,
+          });
+        } else if (
+          !res.data.error &&
+          res.data.current_profile_is_in_friend_request
+        ) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: false,
+            receiveFriendRequest: true,
+          });
+        } else if (!res.data.error && res.data.no_friend_option) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: false,
+            receiveFriendRequest: false,
+          });
+        }
+      })
+      .catch((err) => console.error(err));
+
+    updateLoadingFriendOption(false);
+  };
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -104,18 +167,48 @@ const Profile = () => {
       }
     }
 
+    if (
+      !canCurrentProfileEditable &&
+      currentProfile !== null &&
+      loggedInUserInfo !== null
+    ) {
+      if (!isCancelled) {
+        fetchCurrentProfileFriendOptionWithUser(
+          loggedInUserInfo.uid,
+          currentProfile.uid
+        );
+      }
+    }
+
     return () => {
       isCancelled = true;
     };
-  }, [currentProfile, loggedInUserInfo]);
+  }, [currentProfile, loggedInUserInfo, canCurrentProfileEditable]);
 
   useEffect(() => {
     let isCancelled = false;
 
-    if (socket !== null && currentProfile !== null) {
+    if (socket !== null) {
       socket.on("receive-account-update-data", (accountObj) => {
-        if (!isCancelled && currentProfile.uid === accountObj.uid) {
+        if (
+          !isCancelled &&
+          currentProfile !== null &&
+          currentProfile.uid === accountObj.uid
+        ) {
           updateCurrentProfile(accountObj);
+        }
+      });
+
+      socket.on("receive-friend-request", (friendRequestData) => {
+        if (
+          !isCancelled &&
+          loggedInUserInfo !== null &&
+          friendRequestData.friendRequestReceiver.uid === loggedInUserInfo.uid
+        ) {
+          fetchCurrentProfileFriendOptionWithUser(
+            friendRequestData.friendRequestReceiver.uid,
+            friendRequestData.friendRequestSender.uid
+          );
         }
       });
     }
@@ -123,7 +216,7 @@ const Profile = () => {
     return () => {
       isCancelled = true;
     };
-  }, [socket, currentProfile]);
+  }, [socket]);
 
   return (
     <div>

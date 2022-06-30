@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../../components/navbar/Navbar";
-import profileImg from "../../dummy/images/portImg.png";
+import dummyImg from "../../dummy/static_images/default_profile.png";
 import { Link } from "react-router-dom";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import PersonRemoveOutlinedIcon from "@mui/icons-material/PersonRemoveOutlined";
@@ -67,6 +67,7 @@ const FriendList = () => {
       )
       .then((res) => {
         if (res.data.error) {
+          setFriends([]);
           setIsLoading(false);
         } else if (!res.data.error && res.data.error_finding_friend) {
           setFriends([]);
@@ -77,7 +78,7 @@ const FriendList = () => {
 
             friends.length === 0
               ? setFriends(res.data.friends)
-              : setFriends((prev) => [...prev, res.data.friends]);
+              : setFriends((prev) => [...prev, ...res.data.friends]);
 
             res.data.friends.length < 5 && setLoadMoreFriends(false);
           } else {
@@ -118,6 +119,64 @@ const FriendList = () => {
     };
   }, [loggedInUserInfo]);
 
+  const objObserver = new IntersectionObserver((entries, objObserver) => {
+    let objObserverArr = [];
+
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      objObserverArr.push(entry.isIntersecting);
+      objObserver.unobserve(entry.target);
+
+      if (objObserverArr.length >= 3 && loggedInUserInfo !== null) {
+        const userLocalStorageSettings =
+          localStorage.getItem("user_storage_settings") &&
+          JSON.parse(localStorage.getItem("user_storage_settings"));
+
+        if (
+          userLocalStorageSettings &&
+          Object.keys(userLocalStorageSettings).length > 0
+        ) {
+          const numberOfFriendRequests =
+            userLocalStorageSettings["friend_requests"];
+
+          userLocalStorageSettings["friend_requests"] += 5;
+          localStorage.setItem(
+            "user_storage_settings",
+            JSON.stringify(userLocalStorageSettings)
+          );
+
+          fetchUserFriends(loggedInUserInfo.uid, numberOfFriendRequests + 5);
+        }
+
+        objObserverArr = [];
+      }
+    });
+  });
+
+  const lazyLoadObjects = () => {
+    if (friendListRef.current !== null) {
+      const friendList = friendListRef.current.querySelectorAll(
+        ".friend__card"
+      );
+
+      friendList.forEach((friend) => {
+        objObserver.observe(friend);
+      });
+    }
+  };
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (!isCancelled) {
+      lazyLoadObjects();
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [friends]);
+
   return (
     <div>
       <Navbar />
@@ -148,67 +207,79 @@ const FriendList = () => {
                   ref={friendListRef}
                   style={{ flexWrap: "wrap", gap: "1rem" }}
                 >
-                  <div className="friend__card">
-                    <Stack direction="column" spacing={1}>
-                      <Link
-                        to="#"
-                        style={{ display: "flex", justifyContent: "center" }}
-                      >
-                        <img className="friend__img" src={profileImg} alt="" />
-                      </Link>
-
-                      <Stack
-                        direction="column"
-                        spacing={1}
-                        style={{ padding: "0 1rem" }}
-                      >
+                  {friends.map((friend) => (
+                    <div key={friend.uid} className="friend__card">
+                      <Stack direction="column" spacing={1}>
                         <Link
-                          to="#"
-                          style={{ color: "black", textAlign: "center" }}
+                          to={`/profile/${friend.uid}/${friend.username}/`}
+                          style={{ display: "flex", justifyContent: "center" }}
                         >
-                          <Typography
-                            variant="p"
-                            className="friend__username"
-                            style={{
-                              fontSize: "1rem",
-                              fontWeight: "600",
-                              color: "var(--slate-600)",
-                            }}
-                          >
-                            Wasek Samin
-                          </Typography>
+                          <img
+                            className="friend__img"
+                            src={
+                              friend.current_profile_pic !== null
+                                ? `${MYAPI}${friend.current_profile_pic}`
+                                : dummyImg
+                            }
+                            alt={friend.username}
+                          />
                         </Link>
 
-                        <Stack direction="column" spacing={1}>
-                          <Link to="#">
+                        <Stack
+                          direction="column"
+                          spacing={1}
+                          style={{ padding: "0 1rem" }}
+                        >
+                          <Link
+                            to={`/profile/${friend.uid}/${friend.username}/`}
+                            style={{ color: "black", textAlign: "center" }}
+                          >
+                            <Typography
+                              variant="p"
+                              className="friend__username"
+                              style={{
+                                fontSize: "1rem",
+                                fontWeight: "600",
+                                color: "var(--slate-600)",
+                              }}
+                            >
+                              {friend.username}
+                            </Typography>
+                          </Link>
+
+                          <Stack direction="column" spacing={1}>
+                            <Link
+                              to={`/profile/${friend.uid}/${friend.username}/`}
+                            >
+                              <Button
+                                variant="contained"
+                                style={{
+                                  textTransform: "capitalize",
+                                  width: "100%",
+                                }}
+                                color="secondary"
+                              >
+                                <AccountCircleOutlinedIcon
+                                  style={{ marginRight: "0.12rem" }}
+                                />
+                                Profile
+                              </Button>
+                            </Link>
                             <Button
                               variant="contained"
-                              style={{
-                                textTransform: "capitalize",
-                                width: "100%",
-                              }}
-                              color="secondary"
+                              style={{ textTransform: "capitalize" }}
+                              color="error"
                             >
-                              <AccountCircleOutlinedIcon
+                              <PersonRemoveOutlinedIcon
                                 style={{ marginRight: "0.12rem" }}
-                              />
-                              Profile
+                              />{" "}
+                              Unfriend
                             </Button>
-                          </Link>
-                          <Button
-                            variant="contained"
-                            style={{ textTransform: "capitalize" }}
-                            color="error"
-                          >
-                            <PersonRemoveOutlinedIcon
-                              style={{ marginRight: "0.12rem" }}
-                            />{" "}
-                            Unfriend
-                          </Button>
+                          </Stack>
                         </Stack>
                       </Stack>
-                    </Stack>
-                  </div>
+                    </div>
+                  ))}
                 </Stack>
               ) : isLoading ? (
                 <Stack direction="row" justifyContent="center">
@@ -229,6 +300,15 @@ const FriendList = () => {
                   >
                     No friend found yet!
                   </Typography>
+                </Stack>
+              )}
+
+              {friends.length > 0 && loadMoreFriends && (
+                <Stack direction="row" justifyContent="center">
+                  <RefreshIcon
+                    className="profile__allPicsSpinner"
+                    style={{ color: "var(--slate-500)", marginBottom: "1rem" }}
+                  />
                 </Stack>
               )}
             </Grid>

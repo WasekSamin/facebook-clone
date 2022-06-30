@@ -195,6 +195,10 @@ function App() {
           updatePostAccountData(accountObj);
         }
       });
+
+      socket.on("receive-friend-request", friendRequestData => {
+        console.log(friendRequestData);
+      })
     }
 
     return () => {

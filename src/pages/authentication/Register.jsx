@@ -27,7 +27,14 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const MYAPI = APIStore((state) => state.MYAPI);
   const addAccount = AccountStore((state) => state.addAccount);
-  const isUserLoggedIn = AccountStore(state => state.isUserLoggedIn);
+  const isUserLoggedIn = AccountStore((state) => state.isUserLoggedIn);
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
 
   useEffect(() => {
     if (isUserLoggedIn) {
@@ -91,7 +98,6 @@ const Register = () => {
     formData.append("password", info.password);
     formData.append("register", true);
 
-
     await axios
       .post(`${MYAPI}/authentication/account-list/`, formData, {
         headers: {
@@ -119,7 +125,7 @@ const Register = () => {
       .get(`${MYAPI}/authentication/account-detail/${accountUid}/`, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: token,
+          Authorization: `token ${token}`,
         },
       })
       .then((res) => {

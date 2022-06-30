@@ -1,18 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import dummyImg from "../../dummy/static_images/default_profile.png";
 import "../../css/profile/ProfileTop.css";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 import { Button, Stack, Typography } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import EditProfileModal from "../../components/profile/EditProfileModal";
 import EditProfilePicModal from "../../components/profile/EditProfilePicModal";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import {
+  AccountStore,
   APIStore,
   ProfileStore,
+  SocketStore,
+  TokenStore,
 } from "../../components/store/Store";
+import PersonRemoveAlt1OutlinedIcon from "@mui/icons-material/PersonRemoveAlt1Outlined";
+import GroupRemoveOutlinedIcon from "@mui/icons-material/GroupRemoveOutlined";
+import axios from "axios";
 
 const ProfileTop = () => {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
@@ -22,6 +29,19 @@ const ProfileTop = () => {
   const currentProfile = ProfileStore((state) => state.currentProfile);
   const canCurrentProfileEditable = ProfileStore(
     (state) => state.canCurrentProfileEditable
+  );
+  const checkProfileFriendOptionWithUser = ProfileStore(
+    (state) => state.checkProfileFriendOptionWithUser
+  );
+  const loadingFriendOption = ProfileStore(
+    (state) => state.loadingFriendOption
+  );
+  const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+  const token = TokenStore((state) => state.token);
+  const [isLoading, setIsLoading] = useState(false);
+  const socket = SocketStore((state) => state.socket);
+  const updateCheckProfileFriendOptionWithUser = ProfileStore(
+    (state) => state.updateCheckProfileFriendOptionWithUser
   );
 
   const editProfileDetailsModal = () => {
@@ -128,6 +148,103 @@ const ProfileTop = () => {
     );
   };
 
+  const removeFriend = () => {};
+
+  const deleteSentRequest = async() => {
+    setIsLoading(true);
+
+    if (currentProfile !== null && loggedInUserInfo !== null) {
+      let formData = new FormData();
+
+      formData.append("currentProfile", currentProfile.uid);
+      formData.append("loggedInUser", loggedInUserInfo.uid);
+      formData.append("deleteSentRequest", true);
+
+      await axios.post(`${MYAPI}/friend/friend-request-list/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `token ${token}`
+        }
+      }).then(res => {
+        console.log(res.data);
+        if (res.data.error && res.data.friend_request_not_exist) {
+          setIsLoading(false);
+          alert("Invalid user request!");
+        } else if (res.data.error && res.data.user_not_in_friend_request_list) {
+          setIsLoading(false);
+          alert("Invalid user request!");
+        } else if (res.data.error) {
+          setIsLoading(false);
+          alert("Failed to delete the friend request!");
+        } else if (!res.data.error && res.data.delete_sent_request_success) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: false,
+            receiveFriendRequest: false,
+          });
+
+          if (currentProfile !== null && loggedInUserInfo !== null) {
+            socket.emit("sender-delete-friend-request", {
+              friendRequestSender: loggedInUserInfo,
+              friendRequestReceiver: currentProfile,
+              receiverToken: res.data.receiver_token
+            })
+          }
+        }
+      }).catch(err => console.error(err));
+      setIsLoading(false);
+    } else {
+      alert("Failed to delete the friend request!");
+      setIsLoading(false);
+    }
+  };
+
+  const deleteReceiveRequest = () => {};
+
+  const addFriend = async () => {
+    setIsLoading(true);
+
+    if (currentProfile !== null && loggedInUserInfo !== null) {
+      let formData = new FormData();
+
+      formData.append("currentProfile", currentProfile.uid);
+      formData.append("loggedInUser", loggedInUserInfo.uid);
+      formData.append("addFriend", true);
+
+      await axios
+        .post(`${MYAPI}/friend/friend-request-list/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.data.error) {
+            alert("Failed to send friend request! Something went wrong...");
+            setIsLoading(false);
+          } else if (!res.data.error && res.data.friend_request_sent_success) {
+            updateCheckProfileFriendOptionWithUser({
+              friend: false,
+              sendFriendRequest: true,
+              receiveFriendRequest: false,
+            });
+            socket.emit("send-friend-request", {
+              friendRequestSender: res.data.friend_request_sender,
+              friendRequestReceiver: res.data.friend_request_receiver,
+              receiverToken: res.data.receiver_token,
+              notificationUid: res.data.notification_obj_uid,
+            });
+          }
+        })
+        .catch((err) => console.error(err));
+
+      setIsLoading(false);
+    } else {
+      alert("Failed to send friend request! Something went wrong...");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div>
       {/* Edit profile details modal */}
@@ -154,7 +271,9 @@ const ProfileTop = () => {
         >
           <div id="profile__userImgMainDiv">
             <div
-              onClick={() => setProfileViewedImg(currentProfile.current_profile_pic)}
+              onClick={() =>
+                setProfileViewedImg(currentProfile.current_profile_pic)
+              }
               id="profile__userMainImg"
             >
               <img
@@ -207,7 +326,7 @@ const ProfileTop = () => {
                         marginTop: "0.3rem",
                         color: "var(--slate-600)",
                         fontSize: "1rem",
-                        textTransform: "capitalize"
+                        textTransform: "capitalize",
                       }}
                     >
                       {currentProfile.working_status === "Both"
@@ -226,7 +345,7 @@ const ProfileTop = () => {
                           marginTop: "0.3rem",
                           color: "var(--slate-600)",
                           fontSize: "1rem",
-                          textTransform: "capitalize"
+                          textTransform: "capitalize",
                         }}
                       >
                         Studying at {currentProfile.studying_at}
@@ -240,7 +359,7 @@ const ProfileTop = () => {
                           marginTop: "0.3rem",
                           color: "var(--slate-600)",
                           fontSize: "1rem",
-                          textTransform: "capitalize"
+                          textTransform: "capitalize",
                         }}
                       >
                         Working at {currentProfile.working_at}{" "}
@@ -255,25 +374,80 @@ const ProfileTop = () => {
           </div>
         </Stack>
 
-        {canCurrentProfileEditable ? (
-          <Button
-            className="profile__topEditUserInfoBtn"
-            variant="contained"
-            color="success"
-            onClick={() => setShowEditProfileModal(true)}
-          >
-            <ModeEditOutlineOutlinedIcon style={{ marginRight: "0.12rem" }} />
-            Edit Profile
-          </Button>
-        ) : <Button
-        className="profile__topEditUserInfoBtn"
-        variant="contained"
-        color="secondary"
-        onClick={() => setShowEditProfileModal(true)}
-      >
-        <PersonAddIcon style={{ marginRight: "0.12rem" }} />
-        Add Friend
-      </Button>}
+        {!loadingFriendOption ? (
+          canCurrentProfileEditable ? (
+            <Button
+              className="profile__topEditUserInfoBtn"
+              variant="contained"
+              color="success"
+              onClick={() => setShowEditProfileModal(true)}
+            >
+              <ModeEditOutlineOutlinedIcon style={{ marginRight: "0.12rem" }} />
+              Edit Profile
+            </Button>
+          ) : checkProfileFriendOptionWithUser.friend ? (
+            <LoadingButton
+              loadingPosition="end"
+              loading={isLoading}
+              variant="contained"
+              color="error"
+              onClick={() => removeFriend()}
+            >
+              <GroupRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} />
+              UnFriend
+            </LoadingButton>
+          ) : checkProfileFriendOptionWithUser.sendFriendRequest ? (
+            <LoadingButton
+              loadingPosition="end"
+              loading={isLoading}
+              variant="contained"
+              color="error"
+              onClick={() => deleteSentRequest()}
+            >
+              <PersonRemoveAlt1OutlinedIcon
+                style={{ marginRight: "0.12rem" }}
+              />
+              Delete Request
+            </LoadingButton>
+          ) : checkProfileFriendOptionWithUser.receiveFriendRequest ? (
+            <Stack direction="column" spacing={1}>
+              <LoadingButton
+                loadingPosition="end"
+                loading={isLoading}
+                variant="contained"
+                color="secondary"
+                onClick={() => deleteReceiveRequest()}
+              >
+                <PersonAddIcon style={{ marginRight: "0.12rem" }} />
+                Accept Request
+              </LoadingButton>
+
+              <LoadingButton
+                loadingPosition="end"
+                loading={isLoading}
+                variant="contained"
+                color="error"
+                onClick={() => deleteReceiveRequest()}
+              >
+                <PersonRemoveAlt1OutlinedIcon
+                  style={{ marginRight: "0.12rem" }}
+                />
+                Remove
+              </LoadingButton>
+            </Stack>
+          ) : (
+            <LoadingButton
+              loadingPosition="end"
+              loading={isLoading}
+              variant="contained"
+              color="secondary"
+              onClick={() => addFriend()}
+            >
+              <PersonAddIcon style={{ marginRight: "0.12rem" }} />
+              Add Friend
+            </LoadingButton>
+          )
+        ) : null}
       </Stack>
     </div>
   );

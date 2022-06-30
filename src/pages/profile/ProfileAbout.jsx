@@ -52,8 +52,21 @@ const ProfileAbout = () => {
   );
   const token = TokenStore((state) => state.token);
   const [errorMsgPos, setErrorMsgPos] = useState(-1);
+  const updateLoadingFriendOption = ProfileStore(
+    (state) => state.updateLoadingFriendOption
+  );
+  const updateCheckProfileFriendOptionWithUser = ProfileStore(
+    (state) => state.updateCheckProfileFriendOptionWithUser
+  );
 
   const paramData = useParams();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
 
   const fetchProfileData = (userUid) => {
     axios
@@ -67,6 +80,56 @@ const ProfileAbout = () => {
         updateCurrentProfile(res.data);
       })
       .catch((err) => console.error(err));
+  };
+
+  const fetchCurrentProfileFriendOptionWithUser = async (
+    userUid,
+    profileUid
+  ) => {
+    updateLoadingFriendOption(true);
+
+    await axios
+      .get(
+        `${MYAPI}/friend/fetch-current-profile-friend-option-with-user/${userUid}/${profileUid}/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        if (!res.data.error && res.data.user_is_friend) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: true,
+            sendFriendRequest: false,
+            receiveFriendRequest: false,
+          });
+        } else if (!res.data.error && res.data.user_is_in_friend_request) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: true,
+            receiveFriendRequest: false,
+          });
+        } else if (
+          !res.data.error &&
+          res.data.current_profile_is_in_friend_request
+        ) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: false,
+            receiveFriendRequest: true,
+          });
+        } else if (!res.data.error && res.data.no_friend_option) {
+          updateCheckProfileFriendOptionWithUser({
+            friend: false,
+            sendFriendRequest: false,
+            receiveFriendRequest: false,
+          });
+        }
+      })
+      .catch((err) => console.error(err));
+
+    updateLoadingFriendOption(false);
   };
 
   useEffect(() => {
@@ -102,6 +165,19 @@ const ProfileAbout = () => {
         }
       }
 
+      if (
+        !canCurrentProfileEditable &&
+        currentProfile !== null &&
+        loggedInUserInfo !== null
+      ) {
+        if (!isCancelled) {
+          fetchCurrentProfileFriendOptionWithUser(
+            loggedInUserInfo.uid,
+            currentProfile.uid
+          );
+        }
+      }
+
       setUsername(currentProfile.username);
       currentProfile.address !== null && setAddress(currentProfile.address);
       currentProfile.working_status !== null &&
@@ -121,7 +197,7 @@ const ProfileAbout = () => {
     return () => {
       isCancelled = true;
     };
-  }, [currentProfile, loggedInUserInfo]);
+  }, [currentProfile, loggedInUserInfo, canCurrentProfileEditable]);
 
   useEffect(() => {
     let isCancelled = false;

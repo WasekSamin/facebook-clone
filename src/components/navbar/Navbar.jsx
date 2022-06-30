@@ -6,7 +6,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import "../../css/navbar/Navbar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import profileImg from "../../dummy/images/portImg.png";
 import ClearIcon from "@mui/icons-material/Clear";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
@@ -18,9 +18,11 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import CreatePostModal from "../post/CreatePostModal";
-import { AccountStore } from "../store/Store";
+import { AccountStore, TokenStore, SocketStore } from "../store/Store";
+import Cookies from "js-cookie"
 
 const Navbar = () => {
+  let navigate = useNavigate();
   const clearNavbarSearchFieldBtnRef = useRef(null);
   const [navbarSearchFieldText, setNavbarSearchFieldText] = useState("");
   const mobileSidebarRef = useRef(null);
@@ -29,6 +31,10 @@ const Navbar = () => {
   const [showNavbarSearchModal, setShowNavbarSearchModal] = useState(false);
   const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
   const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+  const updateToken = TokenStore(state => state.updateToken);
+  const updateLoggedInUserInfo = AccountStore(state => state.updateLoggedInUserInfo);
+  const updateSocket = SocketStore(state => state.updateSocket);
+  const updateIsUserLoggedIn = AccountStore(state => state.updateIsUserLoggedIn);
 
   const closeMobileSidebar = (event) => {
     if (
@@ -95,6 +101,18 @@ const Navbar = () => {
       </>
     );
   };
+
+  // Logout
+  const handleLogout = () => {
+    Cookies.remove("SID");
+    Cookies.remove("SCON");
+    updateToken("f2cee27b58003f55f5af1d54def2190fa9fd3dff");
+    updateSocket(null);
+    updateLoggedInUserInfo(null);
+    updateIsUserLoggedIn(false);
+
+    navigate("/login/");
+  }
 
   const searchPeopleModal = () => {
     return (
@@ -572,12 +590,13 @@ const Navbar = () => {
                         justifyContent: "flex-start",
                         textTransform: "capitalize",
                       }}
+                      onClick={handleLogout}
                     >
                       <ExitToAppIcon style={{ marginRight: "1rem" }} /> Logout
                     </Button>
                   </Stack>
                 </Stack>
-                <IconButton id="navbar__logoutBtn" color="error">
+                <IconButton onClick={handleLogout} id="navbar__logoutBtn" color="error">
                   <ExitToAppIcon />
                 </IconButton>
               </Stack>

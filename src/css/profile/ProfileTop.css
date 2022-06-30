@@ -63,6 +63,6 @@
     }
 
     .profile__topEditUserInfoBtn {
-        display: none !important;
+        /* display: none !important; */
     }
 }

@@ -27,6 +27,13 @@ const Login = () => {
   const isUserLoggedIn = AccountStore(state => state.isUserLoggedIn);
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+    });
+  }, []);
+
+  useEffect(() => {
     if (isUserLoggedIn) {
       navigate("/");
     }

@@ -88,25 +88,30 @@ export const PostStore = create((set) => ({
     set((state) => ({
       allPosts: state.allPosts.filter((post) => post.uid !== postUid),
     })),
-  updatePostAccountData: (account) => set((state) => ({
-    allPosts: state.allPosts.map(post => post.user.uid === account.uid ? {
-      ...post,
-      user: {
-        ...post.user,
-        username: account.username,
-        address: account.address,
-        gender: account.gender,
-        working_status: account.working_status,
-        working_at: account.working_at,
-        job_position: account.job_position,
-        studying_at: account.studying_at,
-        phone_no: account.phone_no,
-        relation_status: account.relation_status,
-        char_updated_at: account.char_updated_at,
-        current_profile_pic: account.current_profile_pic
-      }
-    } : post)
-  }))
+  updatePostAccountData: (account) =>
+    set((state) => ({
+      allPosts: state.allPosts.map((post) =>
+        post.user.uid === account.uid
+          ? {
+              ...post,
+              user: {
+                ...post.user,
+                username: account.username,
+                address: account.address,
+                gender: account.gender,
+                working_status: account.working_status,
+                working_at: account.working_at,
+                job_position: account.job_position,
+                studying_at: account.studying_at,
+                phone_no: account.phone_no,
+                relation_status: account.relation_status,
+                char_updated_at: account.char_updated_at,
+                current_profile_pic: account.current_profile_pic,
+              },
+            }
+          : post
+      ),
+    })),
 }));
 
 export const ProfileStore = create((set) => ({
@@ -129,18 +134,37 @@ export const ProfileStore = create((set) => ({
     set((state) => ({
       canCurrentProfileEditable: editable,
     })),
+  loadingFriendOption: true,
+  updateLoadingFriendOption: (action) =>
+    set((state) => ({
+      loadingFriendOption: action,
+    })),
+  checkProfileFriendOptionWithUser: {
+    friend: false, // If user is friend with the current profile
+    sendFriendRequest: false, // If user send friend request to the current profile
+    receiveFriendRequest: false, // If user got friend request from the current profile
+  },
+  updateCheckProfileFriendOptionWithUser: (friendOption) =>
+    set((state) => ({
+      checkProfileFriendOptionWithUser: friendOption,
+    })),
 }));
 
 export const FriendStore = create((set) => ({
   // For logged in user
   userFriends: [],
-  addUserFriends: (friends) => set((state) => ({
-    userFriends: friends
-  })),
-  addFriend: (account) => set((state) => ({
-    userFriends: [account, ...state.userFriends],
-  })),
-  removeFriend: (account) => set((state) => ({
-    userFriends: state.userFriends.filter(friend => friend.user.uid !== account.uid)
-  }))
-}))
+  addUserFriends: (friends) =>
+    set((state) => ({
+      userFriends: friends,
+    })),
+  addFriend: (account) =>
+    set((state) => ({
+      userFriends: [account, ...state.userFriends],
+    })),
+  removeFriend: (account) =>
+    set((state) => ({
+      userFriends: state.userFriends.filter(
+        (friend) => friend.user.uid !== account.uid
+      ),
+    })),
+}));
