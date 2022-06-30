@@ -7,7 +7,7 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = (
         "uid", "user", "notification_type",
         "is_notification_seen", "notified_sender",
-        "post", "friend", "char_created_at", "created_at"
+        "post", "friend_request", "char_created_at", "created_at"
     )
 
 

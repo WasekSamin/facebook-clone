@@ -12,3 +12,15 @@ class Friend(models.Model):
 
     def __str__(self):
         return str(self.uid)
+
+
+# For receiver friend requests
+class FriendRequest(models.Model):
+    uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
+    user = models.OneToOneField(Account, on_delete=models.CASCADE, null=True, related_name="friend_request_user")
+    friend_request_senders = models.ManyToManyField(Account, blank=True, related_name="friend_requet_senders")
+    char_created_at = models.CharField(max_length=200, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.uid)
