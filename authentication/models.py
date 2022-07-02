@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from PIL import Image
 from django.conf import settings
+from django.utils import timezone
 
 
 class AccountManager(BaseUserManager):
@@ -39,8 +40,10 @@ class AccountManager(BaseUserManager):
 class UserProfilePic(models.Model):
     uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
     image = models.ImageField(upload_to="images/profile", null=True)
-    char_created_at = models.CharField(max_length=200, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ("-created_at", )
 
     def __str__(self):
         return str(self.uid)
@@ -84,10 +87,11 @@ class Account(AbstractBaseUser):
     current_profile_pic = models.ImageField(
         upload_to="images/profile", null=True, blank=True)
     all_profile_pics = models.ManyToManyField(UserProfilePic, blank=True)
-    char_created_at = models.CharField(max_length=200, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    char_updated_at = models.CharField(max_length=200, null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now, null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at", )
 
     objects = AccountManager()
 
@@ -102,6 +106,33 @@ class Account(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    # If account exists, return the account obj, else return None
+    def check_for_account_exist(self, email):
+        try:
+            account_obj = Account.objects.get(email=email)
+        except Account.DoesNotExist:
+            return None
+        else:
+            return account_obj
+
+    # Return token if user is valid
+    def check_for_account_token(self, account_obj):
+        try:
+            token_obj = Token.objects.get(user=account_obj)
+        except Token.DoesNotExist:
+            return None
+        else:
+            return token_obj
+
+    # Returns account object using uid
+    def get_account_obj_using_uid(self, user_uid):
+        try:
+            account_obj = Account.objects.get(uid=user_uid)
+        except Account.DoesNotExist:
+            return None
+        else:
+            return account_obj
 
     # def save(self):
     #     super(Account, self).save()
@@ -122,10 +153,11 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 class UpdatePassword(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid4)
-    char_created_at = models.CharField(max_length=200, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    char_updated_at = models.CharField(max_length=200, null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now, null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at", )
 
     def __str__(self):
         return str(self.token)

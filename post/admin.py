@@ -6,16 +6,16 @@ from .models import Post, Comment, Like
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = (
-        "uid", "user",
-        "content", "char_created_at"
+        "uid", "user", "content", 
+        "created_at", "updated_at"
     )
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
-        "uid", "user", "post",
-        "content", "char_created_at"
+        "uid", "user", "post", "content", 
+        "created_at", "updated_at"
     )
 
 
@@ -24,5 +24,5 @@ class LikeAdmin(admin.ModelAdmin):
     list_display = (
         "uid", "user", "post",
         "like", "dislike",
-        "char_created_at"
+        "created_at", "updated_at"
     )

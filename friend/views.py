@@ -9,10 +9,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from facebook_core.custom_pagination import CustomPagination
-from authentication.views import get_account_obj_using_uid
 from django.views import View
-from facebook_core.current_datetime import get_current_datetime
-from authentication.views import check_for_account_token
 
 
 class FetchUserAllFriendsView(View):
@@ -51,9 +48,7 @@ class FetchUserAllFriendsView(View):
                 "current_profile_pic": friend.current_profile_pic.url if friend.current_profile_pic else None,
                 "gender": friend.gender,
                 "relation_status": friend.relation_status,
-                "char_created_at": friend.char_created_at,
                 "created_at": friend.created_at,
-                "char_updated_at": friend.char_updated_at,
                 "updated_at": friend.updated_at
             }, friends))
 
@@ -72,7 +67,7 @@ class FriendList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = Friend.objects.all().order_by("-created_at")
+        snippets = Friend.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = FriendSerializer(results, many=True)
         return Response(serializer.data)
@@ -149,9 +144,7 @@ class FetchUserAllFriendRequestsView(View):
                     "current_profile_pic": item.current_profile_pic.url if item.current_profile_pic else None,
                     "gender": item.gender,
                     "relation_status": item.relation_status,
-                    "char_created_at": item.char_created_at,
                     "created_at": item.created_at,
-                    "char_updated_at": item.char_updated_at,
                     "updated_at": item.updated_at
                 }, friend_requests
             ))
@@ -165,25 +158,13 @@ class FetchUserAllFriendRequestsView(View):
         return JsonResponse(json_resp, safe=False)
 
 
-# Check if the user in the friend request list
-def check_if_user_in_friend_request_list(account_obj, uid):
-    try:
-        friend_request_obj = FriendRequest.objects.get(user__uid=uid)
-    except FriendRequest.DoesNotExist:
-        is_user_in_friend_request_list = False
-    else:
-        is_user_in_friend_request_list = account_obj in friend_request_obj.friend_request_senders.all()
-
-    return is_user_in_friend_request_list
-
-
 class FetchCurrentProfileFriendOptionWithUserView(View):
     def get(self, request, user_uid, profile_uid):
         json_resp = {
             "error": True
         }
 
-        account_obj = get_account_obj_using_uid(user_uid)
+        account_obj = Account.get_account_obj_using_uid(self, user_uid)
 
         if account_obj is None:
             return JsonResponse(json_resp, safe=False)
@@ -193,8 +174,8 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                 friend_obj = Friend.objects.get(user__uid=profile_uid)
             except Friend.DoesNotExist:
                 # Check if the logged in user is in the friend request list of current profile
-                is_user_in_friend_request_list = check_if_user_in_friend_request_list(
-                    account_obj, profile_uid)
+                is_user_in_friend_request_list = FriendRequest.check_if_user_in_friend_request_list(
+                    self, account_obj, profile_uid)
 
                 if is_user_in_friend_request_list:
                     json_resp = {
@@ -204,8 +185,8 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                     return JsonResponse(json_resp, safe=False)
                 else:
                     # Check if the current profile is in the friend request list of logged in user
-                    current_profile_obj = get_account_obj_using_uid(
-                        profile_uid)
+                    current_profile_obj = Account.get_account_obj_using_uid(
+                        self, profile_uid)
 
                     if current_profile_obj is None:
                         json_resp = {
@@ -213,8 +194,8 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                         }
                         return JsonResponse(json_resp, safe=False)
                     else:
-                        is_current_profile_in_user_friend_request_list = check_if_user_in_friend_request_list(
-                            current_profile_obj, account_obj.uid)
+                        is_current_profile_in_user_friend_request_list = FriendRequest.check_if_user_in_friend_request_list(
+                            self, current_profile_obj, account_obj.uid)
 
                         if is_current_profile_in_user_friend_request_list:
                             json_resp = {
@@ -224,7 +205,7 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                             return JsonResponse(json_resp, safe=False)
                         else:
                             json_resp = {
-                                "error": True,
+                                "error": False,
                                 "no_friend_option": True
                             }
                             return JsonResponse(json_resp, safe=False)
@@ -239,8 +220,8 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                     return JsonResponse(json_resp, safe=False)
                 else:
                     # Check if the logged in user is in the friend request list of current profile
-                    is_user_in_friend_request_list = check_if_user_in_friend_request_list(
-                        account_obj, profile_uid)
+                    is_user_in_friend_request_list = FriendRequest.check_if_user_in_friend_request_list(
+                        self, account_obj, profile_uid)
 
                     if is_user_in_friend_request_list:
                         json_resp = {
@@ -250,8 +231,8 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                         return JsonResponse(json_resp, safe=False)
                     else:
                         # Check if the current profile is in the friend request list of logged in user
-                        current_profile_obj = get_account_obj_using_uid(
-                            profile_uid)
+                        current_profile_obj = Account.get_account_obj_using_uid(
+                            self, profile_uid)
 
                         if current_profile_obj is None:
                             json_resp = {
@@ -259,8 +240,8 @@ class FetchCurrentProfileFriendOptionWithUserView(View):
                             }
                             return JsonResponse(json_resp, safe=False)
                         else:
-                            is_current_profile_in_user_friend_request_list = check_if_user_in_friend_request_list(
-                                current_profile_obj, account_obj.uid)
+                            is_current_profile_in_user_friend_request_list = FriendRequest.check_if_user_in_friend_request_list(
+                                self, current_profile_obj, account_obj.uid)
 
                             if is_current_profile_in_user_friend_request_list:
                                 json_resp = {
@@ -283,7 +264,7 @@ class FriendRequestList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = FriendRequest.objects.all().order_by("-created_at")
+        snippets = FriendRequest.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = FriendRequestSerializer(results, many=True)
         return Response(serializer.data)
@@ -295,22 +276,24 @@ class FriendRequestList(APIView, CustomPagination):
 
         add_friend = request.data.get("addFriend", None)
         delete_sent_request = request.data.get("deleteSentRequest", None)
+        delete_receive_request = request.data.get("deleteReceiveRequest", None)
+        accept_friend_request = request.data.get("acceptFriendRequest", None)
 
         if add_friend == "true":
             current_profile_uid = request.data.get("currentProfile", None)
             logged_in_user_uid = request.data.get("loggedInUser", None)
 
             if current_profile_uid is not None and logged_in_user_uid is not None:
-                current_profile_obj = get_account_obj_using_uid(current_profile_uid)    # Current profile user
-                user_obj = get_account_obj_using_uid(logged_in_user_uid)    # Logged in user
+                current_profile_obj = Account.get_account_obj_using_uid(self, current_profile_uid)    # Current profile user
+                user_obj = Account.get_account_obj_using_uid(self, logged_in_user_uid)    # Logged in user
 
                 if current_profile_obj is None or user_obj is None:
                     return Response(resp_msg)
                 else:
-                    try:
-                        friend_request_obj = FriendRequest.objects.get(user=current_profile_obj)
-                    except FriendRequest.DoesNotExist:
-                        receiver_token = check_for_account_token(current_profile_obj)
+                    friend_request_obj = FriendRequest.get_friend_request_obj(self, current_profile_obj)
+
+                    if friend_request_obj is None:
+                        receiver_token = Account.check_for_account_token(self, current_profile_obj)
 
                         if receiver_token is None:
                             resp_msg = {
@@ -319,11 +302,8 @@ class FriendRequestList(APIView, CustomPagination):
                             return Response(resp_msg)
 
                         # Create new friend request object for current profile
-                        current_datetime = get_current_datetime()
-
                         friend_request_obj = FriendRequest(
-                            user=current_profile_obj,
-                            char_created_at=current_datetime
+                            user=current_profile_obj
                         )
                         friend_request_obj.save()
 
@@ -334,8 +314,7 @@ class FriendRequestList(APIView, CustomPagination):
                             user=current_profile_obj,
                             notification_type="friend",
                             notified_sender=user_obj,
-                            friend_request=friend_request_obj,
-                            char_created_at=current_datetime
+                            friend_request=friend_request_obj
                         )
                         notification_obj.save()                    
 
@@ -355,9 +334,7 @@ class FriendRequestList(APIView, CustomPagination):
                                 "current_profile_pic": user_obj.current_profile_pic.url if user_obj.current_profile_pic else None,
                                 "gender": user_obj.gender,
                                 "relation_status": user_obj.relation_status,
-                                "char_created_at": user_obj.char_created_at,
                                 "created_at": user_obj.created_at,
-                                "char_updated_at": user_obj.char_updated_at,
                                 "updated_at": user_obj.updated_at
                             },
                             "friend_request_receiver": {
@@ -373,9 +350,7 @@ class FriendRequestList(APIView, CustomPagination):
                                 "current_profile_pic": current_profile_obj.current_profile_pic.url if current_profile_obj.current_profile_pic else None,
                                 "gender": current_profile_obj.gender,
                                 "relation_status": current_profile_obj.relation_status,
-                                "char_created_at": current_profile_obj.char_created_at,
                                 "created_at": current_profile_obj.created_at,
-                                "char_updated_at": current_profile_obj.char_updated_at,
                                 "updated_at": current_profile_obj.updated_at
                             },
                             "receiver_token": receiver_token.key,
@@ -383,7 +358,7 @@ class FriendRequestList(APIView, CustomPagination):
                         }
                         return Response(resp_msg)
                     else:
-                        receiver_token = check_for_account_token(current_profile_obj)
+                        receiver_token = Account.check_for_account_token(self, current_profile_obj)
 
                         if receiver_token is None:
                             resp_msg = {
@@ -399,10 +374,9 @@ class FriendRequestList(APIView, CustomPagination):
                             user=current_profile_obj,
                             notification_type="friend",
                             notified_sender=user_obj,
-                            friend_request=friend_request_obj,
-                            char_created_at=current_datetime
+                            friend_request=friend_request_obj
                         )
-                        notification_obj.save() 
+                        notification_obj.save()
 
                         resp_msg = {
                             "error": False,
@@ -420,9 +394,7 @@ class FriendRequestList(APIView, CustomPagination):
                                 "current_profile_pic": user_obj.current_profile_pic.url if user_obj.current_profile_pic else None,
                                 "gender": user_obj.gender,
                                 "relation_status": user_obj.relation_status,
-                                "char_created_at": user_obj.char_created_at,
                                 "created_at": user_obj.created_at,
-                                "char_updated_at": user_obj.char_updated_at,
                                 "updated_at": user_obj.updated_at
                             },
                             "friend_request_receiver": {
@@ -438,9 +410,7 @@ class FriendRequestList(APIView, CustomPagination):
                                 "current_profile_pic": current_profile_obj.current_profile_pic.url if current_profile_obj.current_profile_pic else None,
                                 "gender": current_profile_obj.gender,
                                 "relation_status": current_profile_obj.relation_status,
-                                "char_created_at": current_profile_obj.char_created_at,
                                 "created_at": current_profile_obj.created_at,
-                                "char_updated_at": current_profile_obj.char_updated_at,
                                 "updated_at": current_profile_obj.updated_at
                             },
                             "receiver_token": receiver_token.key,
@@ -450,26 +420,33 @@ class FriendRequestList(APIView, CustomPagination):
             else:
                 return Response(resp_msg)
         # If sender delete friend request
-        elif delete_sent_request == "true":
+        elif delete_sent_request == "true" or delete_receive_request == "true":
             current_profile_uid = request.data.get("currentProfile", None)
             user_uid = request.data.get("loggedInUser", None)
 
             if current_profile_uid is not None and user_uid is not None:
-                current_profile_obj = get_account_obj_using_uid(current_profile_uid)
-                user_obj = get_account_obj_using_uid(user_uid)
+                current_profile_obj = Account.get_account_obj_using_uid(self, current_profile_uid)
+                user_obj = Account.get_account_obj_using_uid(self, user_uid)
 
                 if current_profile_obj is None or user_obj is None:
                     return Response(resp_msg)
                 else:
-                    try:
-                        friend_request_obj = FriendRequest.objects.get(user=current_profile_obj)
-                    except FriendRequest.DoesNotExist:
+                    if delete_receive_request == "true":
+                        current_profile_obj, user_obj = user_obj, current_profile_obj
+
+                    friend_request_obj = FriendRequest.get_friend_request_obj(self, current_profile_obj)
+
+                    if friend_request_obj is None:
                         resp_msg = {
                             "error": True,
                             "friend_request_not_exist": True
                         }
+                        return Response(resp_msg)
                     else:
-                        receiver_token = check_for_account_token(current_profile_obj)
+                        if delete_sent_request == "true":
+                            receiver_token = Account.check_for_account_token(self, current_profile_obj)
+                        else:
+                            receiver_token = Account.check_for_account_token(self, user_obj)
 
                         if receiver_token is None:
                             resp_msg = {
@@ -506,9 +483,84 @@ class FriendRequestList(APIView, CustomPagination):
                             resp_msg = {
                                 "error": False,
                                 "delete_sent_request_success": True,
-                                "receiver_token": receiver_token
+                                "receiver_token": receiver_token.key
+                            }
+
+                            if delete_receive_request == "true":
+                                del resp_msg["delete_sent_request_success"]
+                                resp_msg["delete_receive_request_success"] = True
+
+                            return Response(resp_msg)
+            else:
+                return Response(resp_msg)
+        elif accept_friend_request == "true":
+            current_profile_uid = request.data.get("currentProfile", None)
+            user_uid = request.data.get("loggedInUser", None)
+
+            if current_profile_uid is not None and user_uid is not None:
+                current_profile_obj = Account.get_account_obj_using_uid(self, current_profile_uid)
+                user_obj = Account.get_account_obj_using_uid(self, user_uid)
+
+                if current_profile_obj is None or user_obj is None:
+                    return Response(resp_msg)
+                else:
+                    friend_request_obj = FriendRequest.get_friend_request_obj(self, user_obj)
+
+                    if friend_request_obj is None:
+                        resp_msg = {
+                            "error": True,
+                            "friend_request_not_exist": True
+                        }
+                        return Response(resp_msg)
+                    else:
+                        receiver_token = Account.check_for_account_token(self, current_profile_obj)
+
+                        if receiver_token is None:
+                            resp_msg = {
+                                "error": True
                             }
                             return Response(resp_msg)
+
+                        is_user_in_current_profile_friend_request_list = current_profile_obj in friend_request_obj.friend_request_senders.all()
+
+                        if is_user_in_current_profile_friend_request_list:
+                            friend_request_obj.friend_request_senders.remove(current_profile_obj.uid)
+
+                            friend_obj, created = Friend.objects.get_or_create(
+                                user=user_obj
+                            )
+
+                            friend_obj.friends.add(current_profile_obj.uid)
+
+                            try:
+                                notification_obj = Notification.objects.get(
+                                    friend_request=friend_request_obj,
+                                    user=user_obj,
+                                    notified_sender=current_profile_obj
+                                )
+                            except Notification.DoesNotExist:
+                                resp_msg = {
+                                    "error": True,
+                                    "notification_obj_not_found": True
+                                }
+                                return Response(resp_msg)
+                            else:
+                                notification_obj.is_friend_request_accepted = True
+                                notification_obj.save()
+
+                                resp_msg = {
+                                    "error": False,
+                                    "receiver_accept_friend_request": True,
+                                    "receiver_token": receiver_token.key
+                                }
+                                return Response(resp_msg)
+                        else:
+                            resp_msg = {
+                                "error": True,
+                                "user_not_in_friend_request_list": True
+                            }
+                            return Response(resp_msg)
+
             else:
                 return Response(resp_msg)
 

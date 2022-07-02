@@ -8,17 +8,7 @@ from rest_framework import status
 from facebook_core.custom_pagination import CustomPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from facebook_core.current_datetime import get_current_datetime
 from django.views import View
-
-
-def fetch_account_obj_using_uid(user_uid):
-    try:
-        account_obj = Account.objects.get(uid=user_uid)
-    except Account.DoesNotExist:
-        return None
-    else:
-        return account_obj
 
 
 # Showing 3 posts for now
@@ -32,7 +22,7 @@ class ProfileUserPostView(View):
         upper = kwargs["number_of_posts"]
         lower = upper - 3
 
-        account_obj = fetch_account_obj_using_uid(user_uid)
+        account_obj = Account.get_account_obj_using_uid(self, user_uid)
 
         if account_obj is None:
             return JsonResponse(json_resp, safe=False)
@@ -55,16 +45,13 @@ class ProfileUserPostView(View):
                     "current_profile_pic": item.user.current_profile_pic.url if item.user.current_profile_pic else None, 
                     "gender": item.user.gender,
                     "relation_status": item.user.relation_status,
-                    "char_created_at": item.user.char_created_at,
                     "created_at": item.user.created_at,
-                    "char_updated_at": item.user.char_updated_at,
                     "updated_at": item.user.updated_at
                 },
                 "content": item.content,
-                "char_created_at": item.char_created_at,
                 "created_at": item.created_at
             },
-            post_objs  
+            post_objs
         ))
         
         json_resp = {
@@ -81,7 +68,7 @@ class PostList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = Post.objects.all().order_by("-created_at")
+        snippets = Post.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = PostSerializer(results, many=True)
         return Response(serializer.data)
@@ -100,12 +87,9 @@ class PostList(APIView, CustomPagination):
             except Account.DoesNotExist:
                 return Response(resp_msg)
             else:
-                current_datetime = get_current_datetime()
-                
                 post_obj = Post(
                     user=user_obj,
                     content=content,
-                    char_created_at=current_datetime
                 )
                 post_obj.save()
 
@@ -147,12 +131,12 @@ class PostDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CommentList(APIView):
+class CommentList(APIView, CustomPagination):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = Comment.objects.all().order_by("-created_at")
+        snippets = Comment.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = CommentSerializer(snippets, many=True)
         return Response(serializer.data)
@@ -194,12 +178,12 @@ class CommentDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LikeList(APIView):
+class LikeList(APIView, CustomPagination):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = Like.objects.all().order_by("-created_at")
+        snippets = Like.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = LikeSerializer(snippets, many=True)
         return Response(serializer.data)

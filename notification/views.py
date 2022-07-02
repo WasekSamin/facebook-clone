@@ -4,7 +4,6 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from facebook_core.current_datetime import get_current_datetime
 from facebook_core.custom_pagination import CustomPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -15,7 +14,7 @@ class NotificationList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = Notification.objects.all().order_by("-created_at")
+        snippets = Notification.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = NotificationSerializer(results, many=True)
         return Response(serializer.data)
@@ -62,7 +61,7 @@ class NotificationCounterList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = NotificationCounter.objects.all().order_by("-created_at")
+        snippets = NotificationCounter.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = NotificationCounterSerializer(results, many=True)
         return Response(serializer.data)

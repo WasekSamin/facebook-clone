@@ -12,27 +12,7 @@ from django.contrib.auth.hashers import check_password
 from rest_framework.authtoken.models import Token
 from django.views import View
 from django.contrib.auth import authenticate, login
-from facebook_core.current_datetime import get_current_datetime
-
-
-# If account exists, return the account obj, else return None
-def check_for_account_exist(email):
-    try:
-        account_obj = Account.objects.get(email=email)
-    except Account.DoesNotExist:
-        return None
-    else:
-        return account_obj
-
-
-# Return token if user is valid
-def check_for_account_token(account_obj):
-    try:
-        token_obj = Token.objects.get(user=account_obj)
-    except Token.DoesNotExist:
-        return None
-    else:
-        return token_obj
+from django.utils import timezone
 
 
 class AccountList(APIView, CustomPagination):
@@ -40,7 +20,7 @@ class AccountList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = Account.objects.all().order_by("-created_at")
+        snippets = Account.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = AccountSerializer(results, many=True)
         return Response(serializer.data)
@@ -58,7 +38,7 @@ class AccountList(APIView, CustomPagination):
         if register == "true":
             #### FOR REGISTRATION ####
             if username is not None and email is not None and password is not None:
-                account_exist = check_for_account_exist(email)
+                account_exist = Account.check_for_account_exist(self, email)
 
                 if account_exist is not None:
                     resp_msg = {
@@ -66,11 +46,9 @@ class AccountList(APIView, CustomPagination):
                         "account_already_exist": True
                     }
                 else:
-                    current_datetime = get_current_datetime()
                     account_obj = Account(
                         username=username,
                         email=email,
-                        char_created_at=current_datetime
                     )
                     account_obj.set_password(password)
                     account_obj.save()
@@ -87,7 +65,7 @@ class AccountList(APIView, CustomPagination):
             if user is not None:
                 login(request, user)
 
-                token_obj = check_for_account_token(user)
+                token_obj = Account.check_for_account_token(self, user)
 
                 if token_obj is not None:
                     resp_msg = {
@@ -110,15 +88,6 @@ class AccountList(APIView, CustomPagination):
                 return Response(resp_msg)
 
         return Response(resp_msg)
-
-
-def get_account_obj_using_uid(user_uid):
-    try:
-        account_obj = Account.objects.get(uid=user_uid)
-    except Account.DoesNotExist:
-        return None
-    else:
-        return account_obj
 
 
 class AccountDetail(APIView):
@@ -149,16 +118,13 @@ class AccountDetail(APIView):
             content_img_data = request.data.get("contentImgData", None)
 
             if profile_pic is not None and content_img_data is not None:
-                account_obj = get_account_obj_using_uid(uid)
+                account_obj = Account.get_account_obj_using_uid(self, uid)
 
                 if account_obj is None:
                     return Response(resp_msg)
                 else:
-                    current_datetime = get_current_datetime()
-
                     user_profile_pic_obj = UserProfilePic(
                         image=profile_pic,
-                        char_created_at=current_datetime
                     )
                     user_profile_pic_obj.save()
 
@@ -177,7 +143,6 @@ class AccountDetail(APIView):
                                 <img src={content_img_data} />
                             </p>
                         ''',
-                        char_created_at=current_datetime
                     )
                     post_obj.save()
 
@@ -202,7 +167,7 @@ class AccountDetail(APIView):
             relation_status = request.data.get("relationStatus", None)
 
             if username is not None and user_uid is not None:
-                account_obj = get_account_obj_using_uid(user_uid)
+                account_obj = Account.get_account_obj_using_uid(self, user_uid)
 
                 if account_obj is None:
                     return Response(resp_msg)
@@ -217,20 +182,14 @@ class AccountDetail(APIView):
                         relation_status = None
 
                     if phone_no is not None and len(phone_no) > 0:
-                        if phone_no[0] == "+":
-                            phone_first_char = phone_no[0]
-                            phone_no = phone_no[1:]
-
                         try:
-                            phone_no = int(phone_no)
+                            int(phone_no)
                         except ValueError:
                             resp_msg = {
                                 "error": True,
                                 "invalid_format": True
                             }
                             return Response(resp_msg)
-                        else:
-                            phone_no = f"{phone_first_char}{phone_no}"
 
                     if work_status is not None:
                         if work_status != "Studying" and work_status != "Working" and work_status != "Both" and work_status != "None":
@@ -250,8 +209,6 @@ class AccountDetail(APIView):
                         return Response(resp_msg)
 
                     # Update account
-                    current_datetime = get_current_datetime()
-
                     account_obj.username = username
                     account_obj.address = address
                     account_obj.working_status = work_status
@@ -261,7 +218,7 @@ class AccountDetail(APIView):
                     account_obj.phone_no = phone_no
                     account_obj.gender = gender
                     account_obj.relation_status = relation_status
-                    account_obj.char_updated_at = current_datetime
+                    account_obj.updated_at = timezone.now()
 
                     account_obj.save()
 
@@ -325,7 +282,7 @@ class FetchUserProfileSomePicsView(View):
             "error": True
         }
 
-        account_obj = get_account_obj_using_uid(user_uid)
+        account_obj = Account.get_account_obj_using_uid(self, user_uid)
 
         if account_obj is None:
             return JsonResponse(json_resp, safe=False)
@@ -334,7 +291,6 @@ class FetchUserProfileSomePicsView(View):
             profile_pic_list = list(map(lambda pic: {
                 "uid": pic.uid,
                 "image": pic.image.url if pic.image else None,
-                "char_created_at": pic.char_created_at,
                 "created_at": pic.created_at
             }, profile_pics))
 
@@ -353,7 +309,7 @@ class FetchUserAllProfilePicsView(View):
             "error": False
         }
 
-        account_obj = get_account_obj_using_uid(user_uid)
+        account_obj = Account.get_account_obj_using_uid(self, user_uid)
 
         if account_obj is None:
             return JsonResponse(json_resp, safe=False)
@@ -365,7 +321,6 @@ class FetchUserAllProfilePicsView(View):
             profile_pic_list = list(map(lambda pic: {
                 "uid": pic.uid,
                 "image": pic.image.url if pic.image else None,
-                "char_created_at": pic.char_created_at,
                 "created_at": pic.created_at
             }, profile_pics))
 
@@ -384,7 +339,7 @@ class UserProfilePicList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = UserProfilePic.objects.all().order_by("-created_at")
+        snippets = UserProfilePic.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = UserProfilePicSerializer(results, many=True)
         return Response(serializer.data)
@@ -431,7 +386,7 @@ class UpdatePasswordList(APIView, CustomPagination):
     authentication_classes = (TokenAuthentication, )
 
     def get(self, request, format=None):
-        snippets = UpdatePassword.objects.all().order_by("-created_at")
+        snippets = UpdatePassword.objects.all()
         results = self.paginate_queryset(snippets, request, view=self)
         serializer = UpdatePasswordSerializer(results, many=True)
         return Response(serializer.data)

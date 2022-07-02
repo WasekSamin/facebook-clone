@@ -8,7 +8,7 @@ from .models import Friend, FriendRequest
 class FriendAdmin(admin.ModelAdmin):
     list_display = (
         "uid", "user", 
-        "char_created_at", "created_at"
+        "created_at"
     )
 
 
@@ -16,5 +16,5 @@ class FriendAdmin(admin.ModelAdmin):
 class FriendRequestAdmin(admin.ModelAdmin):
     list_display = (
         "uid", "user",
-        "char_created_at", "created_at"
+        "created_at"
     )

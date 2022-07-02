@@ -8,8 +8,8 @@ from .models import Account, UpdatePassword, UserProfilePic
 class AccountAdmin(admin.ModelAdmin):
     list_display = (
         "uid", "email", "username", "current_profile_pic",
-        "is_active", "gender", "char_created_at",
-        "char_updated_at"
+        "is_active", "gender", "created_at",
+        "updated_at"
     )
 
 
@@ -17,12 +17,12 @@ class AccountAdmin(admin.ModelAdmin):
 class UpdatePasswordAdmin(admin.ModelAdmin):
     list_display = (
         "id", "user", "token", 
-        "char_created_at", "char_updated_at"
+        "created_at", "updated_at"
     )
 
 
 @admin.register(UserProfilePic)
 class UserProfilePicAdmin(admin.ModelAdmin):
     list_display = (
-        "uid", "image", "char_created_at",
+        "uid", "image", "created_at",
     )
