@@ -148,9 +148,59 @@ const ProfileTop = () => {
     );
   };
 
-  const removeFriend = () => {};
+  // Sender or receiver gets unfriend
+  const removeFriend = async () => {
+    setIsLoading(true);
 
-  const deleteSentRequest = async() => {
+    if (currentProfile !== null && loggedInUserInfo !== null) {
+      let formData = new FormData();
+
+      formData.append("currentProfile", currentProfile.uid);
+      formData.append("loggedInUser", loggedInUserInfo.uid);
+      formData.append("removeFriend", true);
+
+      await axios
+        .post(`${MYAPI}/friend/friend-request-list/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.data.error && res.data.friend_obj_not_found) {
+            alert("Could find the user on your friend list!");
+            setIsLoading(false);
+          } else if (res.data.error) {
+            setIsLoading(false);
+            alert("Failed to remove the user from your friend list!");
+          } else if (!res.data.error && res.data.remove_friend_success) {
+            updateCheckProfileFriendOptionWithUser({
+              friend: false,
+              sendFriendRequest: false,
+              receiveFriendRequest: false,
+            });
+
+            if (currentProfile !== null && loggedInUserInfo !== null) {
+              socket.emit("remove-user-from-friend-list", {
+                actionUser: loggedInUserInfo,
+                removedFriend: currentProfile,
+                receiverToken: res.data.receiver_token,
+                userToken: token,
+              });
+            }
+          }
+        })
+        .catch((err) => console.error(err));
+
+      setIsLoading(false);
+    } else {
+      alert("Failed to remove the user from your friend list!");
+      setIsLoading(false);
+    }
+  };
+
+  // Sender delete the friend request
+  const deleteSentRequest = async () => {
     setIsLoading(true);
 
     if (currentProfile !== null && loggedInUserInfo !== null) {
@@ -160,38 +210,47 @@ const ProfileTop = () => {
       formData.append("loggedInUser", loggedInUserInfo.uid);
       formData.append("deleteSentRequest", true);
 
-      await axios.post(`${MYAPI}/friend/friend-request-list/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `token ${token}`
-        }
-      }).then(res => {
-        console.log(res.data);
-        if (res.data.error && res.data.friend_request_not_exist) {
-          setIsLoading(false);
-          alert("Invalid user request!");
-        } else if (res.data.error && res.data.user_not_in_friend_request_list) {
-          setIsLoading(false);
-          alert("Invalid user request!");
-        } else if (res.data.error) {
-          setIsLoading(false);
-          alert("Failed to delete the friend request!");
-        } else if (!res.data.error && res.data.delete_sent_request_success) {
-          updateCheckProfileFriendOptionWithUser({
-            friend: false,
-            sendFriendRequest: false,
-            receiveFriendRequest: false,
-          });
+      await axios
+        .post(`${MYAPI}/friend/friend-request-list/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.data.error && res.data.friend_request_not_exist) {
+            setIsLoading(false);
+            alert("Invalid user request!");
+          } else if (
+            res.data.error &&
+            res.data.user_not_in_friend_request_list
+          ) {
+            setIsLoading(false);
+            alert("Invalid user request!");
+          } else if (res.data.error && res.data.notification_obj_not_found) {
+            setIsLoading(false);
+            alert("Something went wrong!");
+            window.location.reload();
+          } else if (res.data.error) {
+            setIsLoading(false);
+            alert("Failed to delete the friend request!");
+          } else if (!res.data.error && res.data.delete_sent_request_success) {
+            updateCheckProfileFriendOptionWithUser({
+              friend: false,
+              sendFriendRequest: false,
+              receiveFriendRequest: false,
+            });
 
-          if (currentProfile !== null && loggedInUserInfo !== null) {
-            socket.emit("sender-delete-friend-request", {
-              friendRequestSender: loggedInUserInfo,
-              friendRequestReceiver: currentProfile,
-              receiverToken: res.data.receiver_token
-            })
+            if (currentProfile !== null && loggedInUserInfo !== null) {
+              socket.emit("sender-delete-friend-request", {
+                friendRequestSender: loggedInUserInfo,
+                friendRequestReceiver: currentProfile,
+                receiverToken: res.data.receiver_token,
+              });
+            }
           }
-        }
-      }).catch(err => console.error(err));
+        })
+        .catch((err) => console.error(err));
       setIsLoading(false);
     } else {
       alert("Failed to delete the friend request!");
@@ -199,8 +258,129 @@ const ProfileTop = () => {
     }
   };
 
-  const deleteReceiveRequest = () => {};
+  // Receiver accepting the friend request
+  const acceptFriendRequest = async () => {
+    setIsLoading(true);
 
+    if (currentProfile !== null && loggedInUserInfo !== null) {
+      let formData = new FormData();
+
+      formData.append("currentProfile", currentProfile.uid);
+      formData.append("loggedInUser", loggedInUserInfo.uid);
+      formData.append("acceptFriendRequest", true);
+
+      await axios
+        .post(`${MYAPI}/friend/friend-request-list/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.data.error && res.data.friend_request_not_exist) {
+            setIsLoading(false);
+            alert("Invalid user request!");
+          } else if (res.data.error && res.data.notification_obj_not_found) {
+            setIsLoading(false);
+            alert("Something went wrong!");
+            window.location.reload();
+          } else if (res.data.error) {
+            setIsLoading(false);
+            alert("Failed to accept the friend request!");
+          } else if (
+            !res.data.error &&
+            res.data.receiver_accept_friend_request
+          ) {
+            updateCheckProfileFriendOptionWithUser({
+              friend: true,
+              sendFriendRequest: false,
+              receiveFriendRequest: false,
+            });
+
+            if (currentProfile !== null && loggedInUserInfo !== null) {
+              socket.emit("receiver-accept-friend-request", {
+                friendRequestSender: currentProfile,
+                friendRequestReceiver: loggedInUserInfo,
+                receiverToken: res.data.receiver_token,
+                userToken: token,
+              });
+            }
+          }
+        })
+        .catch((err) => console.error(err));
+
+      setIsLoading(false);
+    } else {
+      alert("Failed to accept the friend request!");
+      setIsLoading(false);
+    }
+  };
+
+  // Receiver delete the friend request
+  const deleteReceiveRequest = async () => {
+    setIsLoading(true);
+
+    if (currentProfile !== null && loggedInUserInfo !== null) {
+      let formData = new FormData();
+
+      formData.append("currentProfile", currentProfile.uid);
+      formData.append("loggedInUser", loggedInUserInfo.uid);
+      formData.append("deleteReceiveRequest", true);
+
+      await axios
+        .post(`${MYAPI}/friend/friend-request-list/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.data.error && res.data.friend_request_not_exist) {
+            setIsLoading(false);
+            alert("Invalid user request!");
+          } else if (
+            res.data.error &&
+            res.data.user_not_in_friend_request_list
+          ) {
+            setIsLoading(false);
+            alert("Invalid user request!");
+          } else if (res.data.error && res.data.notification_obj_not_found) {
+            setIsLoading(false);
+            alert("Something went wrong!");
+            window.location.reload();
+          } else if (res.data.error) {
+            setIsLoading(false);
+            alert("Failed to delete the friend request!");
+          } else if (
+            !res.data.error &&
+            res.data.delete_receive_request_success
+          ) {
+            updateCheckProfileFriendOptionWithUser({
+              friend: false,
+              sendFriendRequest: false,
+              receiveFriendRequest: false,
+            });
+
+            if (currentProfile !== null && loggedInUserInfo !== null) {
+              socket.emit("receiver-delete-friend-request", {
+                friendRequestSender: currentProfile,
+                friendRequestReceiver: loggedInUserInfo,
+                receiverToken: res.data.receiver_token,
+                userToken: token,
+              });
+            }
+          }
+        })
+        .catch((err) => console.error(err));
+
+      setIsLoading(false);
+    } else {
+      alert("Failed to delete the friend request!");
+      setIsLoading(false);
+    }
+  };
+
+  // Sender sending friend request
   const addFriend = async () => {
     setIsLoading(true);
 
@@ -416,7 +596,7 @@ const ProfileTop = () => {
                 loading={isLoading}
                 variant="contained"
                 color="secondary"
-                onClick={() => deleteReceiveRequest()}
+                onClick={() => acceptFriendRequest()}
               >
                 <PersonAddIcon style={{ marginRight: "0.12rem" }} />
                 Accept Request

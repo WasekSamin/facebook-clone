@@ -6,6 +6,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import dummyImg from "../../dummy/static_images/default_profile.png";
@@ -17,7 +18,8 @@ import axios from "axios";
 import {
   AccountStore,
   APIStore,
-  FriendStore,
+  TokenStore,
+  SocketStore,
 } from "../../components/store/Store";
 import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -25,12 +27,14 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 const FriendList = () => {
   // Fetching logged in user all friends
   const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
-  const addUserFriends = FriendStore((state) => state.addUserFriends);
   const MYAPI = APIStore((state) => state.MYAPI);
   const [friends, setFriends] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadMoreFriends, setLoadMoreFriends] = useState(false);
   const friendListRef = useRef(null);
+  const socket = SocketStore((state) => state.socket);
+  const [buttonIsLoading, setButtonIsLoading] = useState(false);
+  const token = TokenStore(state => state.token);
 
   useEffect(() => {
     const userLocalStorageSettings =
@@ -177,6 +181,103 @@ const FriendList = () => {
     };
   }, [friends]);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (socket !== null) {
+      socket.on("friend-request-accepted-by-receiver", (friendRequestData) => {
+        console.log(friendRequestData);
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (
+            loggedInUserInfo.uid === friendRequestData.friendRequestSender.uid
+          ) {
+            setFriends((prev) => [
+              friendRequestData.friendRequestReceiver,
+              ...prev,
+            ]);
+          } else if (
+            loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid
+          ) {
+            setFriends((prev) => [
+              friendRequestData.friendRequestSender,
+              ...prev,
+            ]);
+          }
+        }
+      });
+
+      socket.on("friend-removed-from-user-list", (friendData) => {
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (friendData.removedFriend.uid === loggedInUserInfo.uid) {
+            setFriends((friends) =>
+              friends.filter(
+                (friend) => friend.uid !== friendData.actionUser.uid
+              )
+            );
+          } else if (friendData.actionUser.uid === loggedInUserInfo.uid) {
+            setFriends((friends) =>
+              friends.filter(
+                (friend) => friend.uid !== friendData.removedFriend.uid
+              )
+            );
+          }
+        }
+      });
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [socket]);
+
+  const removeFriend = async (friend) => {
+    setButtonIsLoading(true);
+
+    if (loggedInUserInfo !== null) {
+      let formData = new FormData();
+
+      formData.append("currentProfile", friend.uid);
+      formData.append("loggedInUser", loggedInUserInfo.uid);
+      formData.append("removeFriend", true);
+
+      await axios
+        .post(`${MYAPI}/friend/friend-request-list/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        })
+        .then((res) => {
+          if (res.data.error && res.data.friend_obj_not_found) {
+            alert("Could find the user on your friend list!");
+            setButtonIsLoading(false);
+          } else if (res.data.error) {
+            setButtonIsLoading(false);
+            alert("Failed to remove the user from your friend list!");
+          } else if (!res.data.error && res.data.remove_friend_success) {
+            setFriends((friends) =>
+              friends.filter((fr) => fr.uid !== friend.uid)
+            );
+
+            if (loggedInUserInfo !== null) {
+              socket.emit("remove-user-from-friend-list", {
+                actionUser: loggedInUserInfo,
+                removedFriend: friend,
+                receiverToken: res.data.receiver_token,
+                userToken: token,
+              });
+            }
+          }
+        })
+        .catch((err) => console.error(err));
+
+      setButtonIsLoading(false);
+    } else {
+      alert("Failed to remove the user from your friend list!");
+      setButtonIsLoading(false);
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -265,16 +366,19 @@ const FriendList = () => {
                                 Profile
                               </Button>
                             </Link>
-                            <Button
+                            <LoadingButton
+                              loadingPosition="end"
+                              loading={buttonIsLoading}
                               variant="contained"
                               style={{ textTransform: "capitalize" }}
                               color="error"
+                              onClick={() => removeFriend(friend)}
                             >
                               <PersonRemoveOutlinedIcon
                                 style={{ marginRight: "0.12rem" }}
                               />{" "}
                               Unfriend
-                            </Button>
+                            </LoadingButton>
                           </Stack>
                         </Stack>
                       </Stack>

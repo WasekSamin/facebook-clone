@@ -29,11 +29,10 @@ import CreatePost from "../../components/post/CreatePost";
 import "../../css/profile/ProfilePost.css";
 import {
   APIStore,
-  PostStore,
   ProfileStore,
-  SocketStore,
 } from "../../components/store/Store";
 import parse from "html-react-parser";
+import moment from "moment";
 
 const ProfilePost = () => {
   const [showPostHeaderRightOptions, setShowPostHeaderRightOptions] = useState(
@@ -167,7 +166,7 @@ const ProfilePost = () => {
                   variant="p"
                   style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
                 >
-                  {post.char_created_at}
+                  {moment(post.created_at).format("lll")}
                 </Typography>
               </Stack>
             </Stack>

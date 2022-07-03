@@ -211,6 +211,70 @@ const Profile = () => {
           );
         }
       });
+
+      socket.on("friend-request-deleted-from-receiver", (friendRequestData) => {
+        if (
+          !isCancelled &&
+          loggedInUserInfo !== null &&
+          loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid
+        ) {
+          fetchCurrentProfileFriendOptionWithUser(
+            friendRequestData.friendRequestReceiver.uid,
+            friendRequestData.friendRequestSender.uid
+          );
+        }
+      });
+
+      socket.on("friend-request-deleted-by-receiver", (friendRequestData) => {
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (
+            loggedInUserInfo.uid === friendRequestData.friendRequestSender.uid
+          ) {
+            fetchCurrentProfileFriendOptionWithUser(
+              friendRequestData.friendRequestSender.uid,
+              friendRequestData.friendRequestReceiver.uid
+            );
+          }
+        } else if (
+          loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid
+        ) {
+          fetchCurrentProfileFriendOptionWithUser(
+            friendRequestData.friendRequestReceiver.uid,
+            friendRequestData.friendRequestSender.uid
+          );
+        }
+      });
+
+      socket.on("friend-request-accepted-by-receiver", (friendRequestData) => {
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (
+            loggedInUserInfo.uid === friendRequestData.friendRequestSender.uid
+          ) {
+            fetchCurrentProfileFriendOptionWithUser(
+              friendRequestData.friendRequestSender.uid,
+              friendRequestData.friendRequestReceiver.uid
+            );
+          }
+        } else if (loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid) {
+          fetchCurrentProfileFriendOptionWithUser(
+            friendRequestData.friendRequestReceiver.uid,
+            friendRequestData.friendRequestSender.uid
+          );
+        }
+      });
+
+      socket.on("friend-removed-from-user-list", (friendData) => {
+        if (
+          !isCancelled &&
+          loggedInUserInfo !== null &&
+          friendData.removedFriend.uid === loggedInUserInfo.uid
+        ) {
+          fetchCurrentProfileFriendOptionWithUser(
+            friendData.removedFriend.uid,
+            friendData.actionUser.uid
+          );
+        }
+      });
     }
 
     return () => {

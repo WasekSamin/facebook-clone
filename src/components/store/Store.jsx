@@ -5,7 +5,7 @@ export const APIStore = create((set) => ({
 }));
 
 export const TokenStore = create((set) => ({
-  token: "f2cee27b58003f55f5af1d54def2190fa9fd3dff",
+  token: "a0d4b4c5c15762dc34c5ae6f37e217fa8b0a49cb",
   updateToken: (token) =>
     set((state) => ({
       token: token,

@@ -26,8 +26,9 @@ import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import EditIcon from "@mui/icons-material/Edit";
 import PostCommentModal from "../../components/post/PostCommentModal";
 import PostLikeModal from "../../components/post/PostLikeModal";
-import { APIStore, PostStore, SocketStore } from "../../components/store/Store";
+import { APIStore, PostStore } from "../../components/store/Store";
 import parse from "html-react-parser";
+import moment from "moment";
 
 const HomePosts = () => {
   const [showPostHeaderRightOptions, setShowPostHeaderRightOptions] = useState(
@@ -138,7 +139,14 @@ const HomePosts = () => {
           <div className="post__headerContent">
             <Stack alignItems="center" direction="row" spacing={2}>
               <Link to={`/profile/${post.user.uid}/${post.user.username}`}>
-                <Avatar alt="Wasek Samin" src={post.user.current_profile_pic !== null ? `${MYAPI}${post.user.current_profile_pic}` : dummyImg} />
+                <Avatar
+                  alt="Wasek Samin"
+                  src={
+                    post.user.current_profile_pic !== null
+                      ? `${MYAPI}${post.user.current_profile_pic}`
+                      : dummyImg
+                  }
+                />
               </Link>
               <Stack direction="column" spacing={0.2}>
                 <Link to={`/profile/${post.user.uid}/${post.user.username}`}>
@@ -146,14 +154,12 @@ const HomePosts = () => {
                     {post.user.username}
                   </Typography>
                 </Link>
-                {post.char_created_at !== null && (
-                  <Typography
-                    variant="p"
-                    style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
-                  >
-                    {post.char_created_at}
-                  </Typography>
-                )}
+                <Typography
+                  variant="p"
+                  style={{ fontSize: "0.83rem", color: "var(--slate-500)" }}
+                >
+                  {moment(post.created_at).format("lll")}
+                </Typography>
               </Stack>
             </Stack>
             <div className="post__headerRightMoreOptionBtn">
@@ -224,9 +230,7 @@ const HomePosts = () => {
             </div>
           </div>
 
-          <div className="post__content">
-            {parse(post.content)}
-          </div>
+          <div className="post__content">{parse(post.content)}</div>
 
           <Stack
             id="post__options"
