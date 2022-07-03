@@ -16,6 +16,15 @@ class Friend(models.Model):
     def __str__(self):
         return str(self.uid)
 
+    # Get friend object using user object
+    def get_friend_obj(self, account_obj):
+        try:
+            friend_obj = Friend.objects.get(user=account_obj)
+        except Friend.DoesNotExist:
+            return None
+        else:
+            return friend_obj
+
 
 # For receiver friend requests
 class FriendRequest(models.Model):

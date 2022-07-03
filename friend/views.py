@@ -278,7 +278,9 @@ class FriendRequestList(APIView, CustomPagination):
         delete_sent_request = request.data.get("deleteSentRequest", None)
         delete_receive_request = request.data.get("deleteReceiveRequest", None)
         accept_friend_request = request.data.get("acceptFriendRequest", None)
+        remove_friend = request.data.get("removeFriend", None)
 
+        # Sending friend request
         if add_friend == "true":
             current_profile_uid = request.data.get("currentProfile", None)
             logged_in_user_uid = request.data.get("loggedInUser", None)
@@ -290,136 +292,69 @@ class FriendRequestList(APIView, CustomPagination):
                 if current_profile_obj is None or user_obj is None:
                     return Response(resp_msg)
                 else:
-                    friend_request_obj = FriendRequest.get_friend_request_obj(self, current_profile_obj)
+                    friend_request_obj, created = FriendRequest.objects.get_or_create(user=current_profile_obj)
 
-                    if friend_request_obj is None:
-                        receiver_token = Account.check_for_account_token(self, current_profile_obj)
+                    receiver_token = Account.check_for_account_token(self, current_profile_obj)
 
-                        if receiver_token is None:
-                            resp_msg = {
-                                "error": True
-                            }
-                            return Response(resp_msg)
-
-                        # Create new friend request object for current profile
-                        friend_request_obj = FriendRequest(
-                            user=current_profile_obj
-                        )
-                        friend_request_obj.save()
-
-                        friend_request_obj.friend_request_senders.add(user_obj.uid)
-
-                        # Create notification object for receiver
-                        notification_obj = Notification(
-                            user=current_profile_obj,
-                            notification_type="friend",
-                            notified_sender=user_obj,
-                            friend_request=friend_request_obj
-                        )
-                        notification_obj.save()                    
-
+                    if receiver_token is None:
                         resp_msg = {
-                            "error": False,
-                            "friend_request_sent_success": True,
-                            "friend_request_sender": {
-                                "uid": user_obj.uid,
-                                "username": user_obj.username,
-                                "email": user_obj.email,
-                                "address": user_obj.address,
-                                "phone_no": user_obj.phone_no,
-                                "working_status": user_obj.working_status,
-                                "studying_at": user_obj.studying_at,
-                                "working_at": user_obj.working_at,
-                                "job_position": user_obj.job_position,
-                                "current_profile_pic": user_obj.current_profile_pic.url if user_obj.current_profile_pic else None,
-                                "gender": user_obj.gender,
-                                "relation_status": user_obj.relation_status,
-                                "created_at": user_obj.created_at,
-                                "updated_at": user_obj.updated_at
-                            },
-                            "friend_request_receiver": {
-                                "uid": current_profile_obj.uid,
-                                "username": current_profile_obj.username,
-                                "email": current_profile_obj.email,
-                                "address": current_profile_obj.address,
-                                "phone_no": current_profile_obj.phone_no,
-                                "working_status": current_profile_obj.working_status,
-                                "studying_at": current_profile_obj.studying_at,
-                                "working_at": current_profile_obj.working_at,
-                                "job_position": current_profile_obj.job_position,
-                                "current_profile_pic": current_profile_obj.current_profile_pic.url if current_profile_obj.current_profile_pic else None,
-                                "gender": current_profile_obj.gender,
-                                "relation_status": current_profile_obj.relation_status,
-                                "created_at": current_profile_obj.created_at,
-                                "updated_at": current_profile_obj.updated_at
-                            },
-                            "receiver_token": receiver_token.key,
-                            "notification_obj_uid": notification_obj.uid,
+                            "error": True
                         }
                         return Response(resp_msg)
-                    else:
-                        receiver_token = Account.check_for_account_token(self, current_profile_obj)
 
-                        if receiver_token is None:
-                            resp_msg = {
-                                "error": True
-                            }
-                            return Response(resp_msg)
+                    friend_request_obj.friend_request_senders.add(user_obj.uid)
 
-                        # Friend request object already exists for current profile
-                        friend_request_obj.friend_request_senders.add(user_obj.uid)
+                    # Create notification object for receiver
+                    notification_obj = Notification(
+                        user=current_profile_obj,
+                        notification_type="friend",
+                        notified_sender=user_obj,
+                        friend_request=friend_request_obj
+                    )
+                    notification_obj.save()
 
-                        # Create notification object for receiver
-                        notification_obj = Notification(
-                            user=current_profile_obj,
-                            notification_type="friend",
-                            notified_sender=user_obj,
-                            friend_request=friend_request_obj
-                        )
-                        notification_obj.save()
-
-                        resp_msg = {
-                            "error": False,
-                            "friend_request_sent_success": True,
-                            "friend_request_sender": {
-                                "uid": user_obj.uid,
-                                "username": user_obj.username,
-                                "email": user_obj.email,
-                                "address": user_obj.address,
-                                "phone_no": user_obj.phone_no,
-                                "working_status": user_obj.working_status,
-                                "studying_at": user_obj.studying_at,
-                                "working_at": user_obj.working_at,
-                                "job_position": user_obj.job_position,
-                                "current_profile_pic": user_obj.current_profile_pic.url if user_obj.current_profile_pic else None,
-                                "gender": user_obj.gender,
-                                "relation_status": user_obj.relation_status,
-                                "created_at": user_obj.created_at,
-                                "updated_at": user_obj.updated_at
-                            },
-                            "friend_request_receiver": {
-                                "uid": current_profile_obj.uid,
-                                "username": current_profile_obj.username,
-                                "email": current_profile_obj.email,
-                                "address": current_profile_obj.address,
-                                "phone_no": current_profile_obj.phone_no,
-                                "working_status": current_profile_obj.working_status,
-                                "studying_at": current_profile_obj.studying_at,
-                                "working_at": current_profile_obj.working_at,
-                                "job_position": current_profile_obj.job_position,
-                                "current_profile_pic": current_profile_obj.current_profile_pic.url if current_profile_obj.current_profile_pic else None,
-                                "gender": current_profile_obj.gender,
-                                "relation_status": current_profile_obj.relation_status,
-                                "created_at": current_profile_obj.created_at,
-                                "updated_at": current_profile_obj.updated_at
-                            },
-                            "receiver_token": receiver_token.key,
-                            "notification_obj_uid": notification_obj.uid,
-                        }
-                        return Response(resp_msg)
+                    resp_msg = {
+                        "error": False,
+                        "friend_request_sent_success": True,
+                        "friend_request_sender": {
+                            "uid": user_obj.uid,
+                            "username": user_obj.username,
+                            "email": user_obj.email,
+                            "address": user_obj.address,
+                            "phone_no": user_obj.phone_no,
+                            "working_status": user_obj.working_status,
+                            "studying_at": user_obj.studying_at,
+                            "working_at": user_obj.working_at,
+                            "job_position": user_obj.job_position,
+                            "current_profile_pic": user_obj.current_profile_pic.url if user_obj.current_profile_pic else None,
+                            "gender": user_obj.gender,
+                            "relation_status": user_obj.relation_status,
+                            "created_at": user_obj.created_at,
+                            "updated_at": user_obj.updated_at
+                        },
+                        "friend_request_receiver": {
+                            "uid": current_profile_obj.uid,
+                            "username": current_profile_obj.username,
+                            "email": current_profile_obj.email,
+                            "address": current_profile_obj.address,
+                            "phone_no": current_profile_obj.phone_no,
+                            "working_status": current_profile_obj.working_status,
+                            "studying_at": current_profile_obj.studying_at,
+                            "working_at": current_profile_obj.working_at,
+                            "job_position": current_profile_obj.job_position,
+                            "current_profile_pic": current_profile_obj.current_profile_pic.url if current_profile_obj.current_profile_pic else None,
+                            "gender": current_profile_obj.gender,
+                            "relation_status": current_profile_obj.relation_status,
+                            "created_at": current_profile_obj.created_at,
+                            "updated_at": current_profile_obj.updated_at
+                        },
+                        "receiver_token": receiver_token.key,
+                        "notification_obj_uid": notification_obj.uid,
+                    }
+                    return Response(resp_msg)
             else:
                 return Response(resp_msg)
-        # If sender delete friend request
+        # If sender delete friend request or receiver delete the friend request
         elif delete_sent_request == "true" or delete_receive_request == "true":
             current_profile_uid = request.data.get("currentProfile", None)
             user_uid = request.data.get("loggedInUser", None)
@@ -465,18 +400,19 @@ class FriendRequestList(APIView, CustomPagination):
                             }
                             return Response(resp_msg)
 
-                        try:
-                            notification_obj = Notification.objects.get(
-                                friend_request=friend_request_obj,
-                                user=current_profile_obj,
-                                notified_sender=user_obj
-                            )
-                        except Notification.DoesNotExist:
+                        notification_obj = Notification.objects.filter(
+                            friend_request=friend_request_obj,
+                            user=current_profile_obj,
+                            notified_sender=user_obj,
+                            notification_type="friend"
+                        ).first()
+
+                        if notification_obj is None:
                             resp_msg = {
                                 "error": True,
                                 "notification_obj_not_found": True
                             }
-                            return Response(resp_msg)
+                            return Response(resp_msg)                            
                         else:
                             notification_obj.delete()
 
@@ -493,6 +429,7 @@ class FriendRequestList(APIView, CustomPagination):
                             return Response(resp_msg)
             else:
                 return Response(resp_msg)
+        # If receiver accept the friend request
         elif accept_friend_request == "true":
             current_profile_uid = request.data.get("currentProfile", None)
             user_uid = request.data.get("loggedInUser", None)
@@ -521,24 +458,29 @@ class FriendRequestList(APIView, CustomPagination):
                             }
                             return Response(resp_msg)
 
-                        is_user_in_current_profile_friend_request_list = current_profile_obj in friend_request_obj.friend_request_senders.all()
+                        is_current_profile_in_user_friend_request_list = current_profile_obj in friend_request_obj.friend_request_senders.all()
 
-                        if is_user_in_current_profile_friend_request_list:
+                        if is_current_profile_in_user_friend_request_list:
                             friend_request_obj.friend_request_senders.remove(current_profile_obj.uid)
 
-                            friend_obj, created = Friend.objects.get_or_create(
+                            receiver_friend_obj, created = Friend.objects.get_or_create(
                                 user=user_obj
                             )
+                            sender_friend_obj, created = Friend.objects.get_or_create(
+                                user=current_profile_obj
+                            )
 
-                            friend_obj.friends.add(current_profile_obj.uid)
+                            receiver_friend_obj.friends.add(current_profile_obj.uid)
+                            sender_friend_obj.friends.add(user_obj.uid)
 
-                            try:
-                                notification_obj = Notification.objects.get(
-                                    friend_request=friend_request_obj,
-                                    user=user_obj,
-                                    notified_sender=current_profile_obj
-                                )
-                            except Notification.DoesNotExist:
+                            notification_obj = Notification.objects.filter(
+                                friend_request=friend_request_obj,
+                                user=user_obj,
+                                notified_sender=current_profile_obj,
+                                notification_type="friend"
+                            ).first()
+
+                            if notification_obj is None:
                                 resp_msg = {
                                     "error": True,
                                     "notification_obj_not_found": True
@@ -561,6 +503,45 @@ class FriendRequestList(APIView, CustomPagination):
                             }
                             return Response(resp_msg)
 
+            else:
+                return Response(resp_msg)
+        # Unfriend by sender or receiver
+        elif remove_friend == "true":
+            current_profile_uid = request.data.get("currentProfile", None)
+            user_uid = request.data.get("loggedInUser", None)
+
+            if current_profile_uid is not None and user_uid is not None:
+                current_profile_obj = Account.get_account_obj_using_uid(self, current_profile_uid)
+                user_obj = Account.get_account_obj_using_uid(self, user_uid)
+
+                if current_profile_obj is None or user_obj is None:
+                    return Response(resp_msg)
+                else:
+                    user_friend_obj = Friend.get_friend_obj(self, user_obj)
+                    current_profile_friend_obj = Friend.get_friend_obj(self, current_profile_obj)
+
+                    receiver_token = Account.check_for_account_token(self, current_profile_obj)
+
+                    if receiver_token is None:
+                        resp_msg = {
+                            "error": True
+                        }
+                        return Response(resp_msg)
+
+                    if user_friend_obj is None or current_profile_friend_obj is None:
+                        resp_msg = {
+                            "error": True,
+                            "friend_obj_not_found": True
+                        }
+                    else:
+                        user_friend_obj.friends.remove(current_profile_obj.uid)
+                        current_profile_friend_obj.friends.remove(user_obj.uid)
+
+                        resp_msg = {
+                            "error": False,
+                            "remove_friend_success": True,
+                            "receiver_token": receiver_token.key
+                        }
             else:
                 return Response(resp_msg)
 
