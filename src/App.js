@@ -171,10 +171,6 @@ function App() {
     fetchUserToken();
     fetchAccounts();
     fetchPosts();
-
-    localStorage.setItem("user_storage_settings", JSON.stringify({
-      friend_requests: 5, pic_requests: 5
-    }))
   }, []);
 
   // Add new post
@@ -196,9 +192,9 @@ function App() {
         }
       });
 
-      socket.on("receive-friend-request", friendRequestData => {
+      socket.on("receive-friend-request", (friendRequestData) => {
         console.log(friendRequestData);
-      })
+      });
     }
 
     return () => {

@@ -8,6 +8,7 @@ import Stack from "@mui/material/Stack";
 import "../../css/navbar/Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import profileImg from "../../dummy/images/portImg.png";
+import dummyImg from "../../dummy/static_images/default_profile.png";
 import ClearIcon from "@mui/icons-material/Clear";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -18,8 +19,13 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import CreatePostModal from "../post/CreatePostModal";
-import { AccountStore, TokenStore, SocketStore } from "../store/Store";
-import Cookies from "js-cookie"
+import {
+  AccountStore,
+  TokenStore,
+  SocketStore,
+  APIStore,
+} from "../store/Store";
+import Cookies from "js-cookie";
 
 const Navbar = () => {
   let navigate = useNavigate();
@@ -31,10 +37,15 @@ const Navbar = () => {
   const [showNavbarSearchModal, setShowNavbarSearchModal] = useState(false);
   const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
   const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
-  const updateToken = TokenStore(state => state.updateToken);
-  const updateLoggedInUserInfo = AccountStore(state => state.updateLoggedInUserInfo);
-  const updateSocket = SocketStore(state => state.updateSocket);
-  const updateIsUserLoggedIn = AccountStore(state => state.updateIsUserLoggedIn);
+  const updateToken = TokenStore((state) => state.updateToken);
+  const updateLoggedInUserInfo = AccountStore(
+    (state) => state.updateLoggedInUserInfo
+  );
+  const updateSocket = SocketStore((state) => state.updateSocket);
+  const updateIsUserLoggedIn = AccountStore(
+    (state) => state.updateIsUserLoggedIn
+  );
+  const MYAPI = APIStore((state) => state.MYAPI);
 
   const closeMobileSidebar = (event) => {
     if (
@@ -106,13 +117,13 @@ const Navbar = () => {
   const handleLogout = () => {
     Cookies.remove("SID");
     Cookies.remove("SCON");
-    updateToken("f2cee27b58003f55f5af1d54def2190fa9fd3dff");
+    updateToken("a0d4b4c5c15762dc34c5ae6f37e217fa8b0a49cb");
     updateSocket(null);
     updateLoggedInUserInfo(null);
     updateIsUserLoggedIn(false);
 
     navigate("/login/");
-  }
+  };
 
   const searchPeopleModal = () => {
     return (
@@ -513,16 +524,26 @@ const Navbar = () => {
                   direction="column"
                   spacing={3}
                 >
-                  <Link to="/profile/" id="navbar__profileAvatar">
-                    {loggedInUserInfo !== null && (
+                  {loggedInUserInfo !== null && (
+                    <Link
+                      to={`/profile/${loggedInUserInfo.uid}/${loggedInUserInfo.username}/`}
+                      id="navbar__profileAvatar"
+                    >
                       <Stack direction="column" spacing={3}>
-                        <Avatar alt="Wasek Samin" src={profileImg} />
+                        <Avatar
+                          alt={loggedInUserInfo.username}
+                          src={
+                            loggedInUserInfo.current_profile_pic !== null
+                              ? `${MYAPI}${loggedInUserInfo.current_profile_pic}`
+                              : dummyImg
+                          }
+                        />
                         <Typography id="navbar__profileUsername" variant="p">
                           {loggedInUserInfo.username}
                         </Typography>
                       </Stack>
-                    )}
-                  </Link>
+                    </Link>
+                  )}
                   <Stack
                     id="navbar__mobileExtraLinks"
                     direction="column"
@@ -596,7 +617,11 @@ const Navbar = () => {
                     </Button>
                   </Stack>
                 </Stack>
-                <IconButton onClick={handleLogout} id="navbar__logoutBtn" color="error">
+                <IconButton
+                  onClick={handleLogout}
+                  id="navbar__logoutBtn"
+                  color="error"
+                >
                   <ExitToAppIcon />
                 </IconButton>
               </Stack>

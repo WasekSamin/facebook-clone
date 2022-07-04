@@ -8,7 +8,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import "../../css/home/HomeLeft.css";
 import Avatar from "@mui/material/Avatar";
-import profileImg from "../../dummy/images/portImg.png";
+import dummyImg from "../../dummy/static_images/default_profile.png";
 import { Link } from "react-router-dom";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import Badge from "@mui/material/Badge";
@@ -18,12 +18,13 @@ import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import { Button, Stack } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import CreatePostModal from "../../components/post/CreatePostModal";
-import { AccountStore } from "../../components/store/Store";
+import { AccountStore, APIStore } from "../../components/store/Store";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 const HomeLeft = () => {
   const [openCreatePostModal, setOpenCreatePostModal] = useState(false);
   const loggedInUserInfo = AccountStore((state) => state.loggedInUserInfo);
+  const MYAPI = APIStore(state => state.MYAPI);
 
   const createPostModal = () => {
     return (
@@ -81,7 +82,7 @@ const HomeLeft = () => {
                     <ListItemButton>
                       <Avatar
                         alt={loggedInUserInfo.username}
-                        src={profileImg}
+                        src={loggedInUserInfo.current_profile_pic !== null ? `${MYAPI}${loggedInUserInfo.current_profile_pic}` : dummyImg}
                       />
                       <ListItemText
                         primary={loggedInUserInfo.username}

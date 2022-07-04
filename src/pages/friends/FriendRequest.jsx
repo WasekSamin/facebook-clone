@@ -24,28 +24,12 @@ const FriendRequest = () => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadMoreFriendRequests, setLoadMoreFriendRequests] = useState(false);
-  const friendRequestsRef = useRef(null);
   const socket = SocketStore((state) => state.socket);
   const token = TokenStore((state) => state.token);
-  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [disabledButtonId, setDisabledButtonId] = useState(-1);
+  const [numberOfFriendRequests, setNumberOfFriendRequests] = useState(30);
 
   useEffect(() => {
-    const userLocalStorageSettings =
-      localStorage.getItem("user_storage_settings") &&
-      JSON.parse(localStorage.getItem("user_storage_settings"));
-
-    if (
-      userLocalStorageSettings &&
-      Object.keys(userLocalStorageSettings).length > 0
-    ) {
-      userLocalStorageSettings["friend_requests"] = 5;
-
-      localStorage.setItem(
-        "user_storage_settings",
-        JSON.stringify(userLocalStorageSettings)
-      );
-    }
-
     window.scrollTo({
       top: 0,
       left: 0,
@@ -79,7 +63,7 @@ const FriendRequest = () => {
                   ...res.data.friend_requests,
                 ]);
 
-            res.data.friend_requests.length < 5 &&
+            res.data.friend_requests.length < 30 &&
               setLoadMoreFriendRequests(false);
           } else {
             setLoadMoreFriendRequests(false);
@@ -95,26 +79,9 @@ const FriendRequest = () => {
     let isCancelled = false;
     setIsLoading(true);
 
-    if (loggedInUserInfo !== null) {
-      if (!isCancelled) {
-        const userLocalStorageSettings =
-          localStorage.getItem("user_storage_settings") &&
-          JSON.parse(localStorage.getItem("user_storage_settings"));
-
-        if (
-          userLocalStorageSettings &&
-          Object.keys(userLocalStorageSettings).length > 0
-        ) {
-          const numberOfFriendRequests =
-            userLocalStorageSettings["friend_requests"];
-
-          friendRequests.length === 0 &&
-            fetchUserFriendRequests(
-              loggedInUserInfo.uid,
-              numberOfFriendRequests
-            );
-        }
-      }
+    if (!isCancelled && loggedInUserInfo !== null) {
+      friendRequests.length === 0 &&
+        fetchUserFriendRequests(loggedInUserInfo.uid, numberOfFriendRequests);
     }
 
     return () => {
@@ -122,50 +89,16 @@ const FriendRequest = () => {
     };
   }, [loggedInUserInfo]);
 
-  const objObserver = new IntersectionObserver((entries, objObserver) => {
-    let objObserverArr = [];
+  const loadMoreFriendRequestsOnScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+      document.documentElement.offsetHeight
+    )
+      return;
 
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      objObserverArr.push(entry.isIntersecting);
-      objObserver.unobserve(entry.target);
-
-      if (objObserverArr.length >= 3 && loggedInUserInfo !== null) {
-        const userLocalStorageSettings =
-          localStorage.getItem("user_storage_settings") &&
-          JSON.parse(localStorage.getItem("user_storage_settings"));
-
-        if (
-          userLocalStorageSettings &&
-          Object.keys(userLocalStorageSettings).length > 0
-        ) {
-          const numberOfFriendRequests =
-            userLocalStorageSettings["friend_requests"];
-
-          userLocalStorageSettings["friend_requests"] += 5;
-          localStorage.setItem(
-            "user_storage_settings",
-            JSON.stringify(userLocalStorageSettings)
-          );
-
-          fetchUserFriendRequests(
-            loggedInUserInfo.uid,
-            numberOfFriendRequests + 5
-          );
-        }
-
-        objObserverArr = [];
-      }
-    });
-  });
-
-  const lazyLoadObjects = () => {
-    if (friendRequestsRef.current !== null) {
-      const friendRequestList = document.querySelectorAll(".friend__card");
-
-      friendRequestList.forEach((friendRequest) => {
-        objObserver.observe(friendRequest);
-      });
+    if (loggedInUserInfo !== null) {
+      setNumberOfFriendRequests(numberOfFriendRequests + 30);
+      fetchUserFriendRequests(loggedInUserInfo.uid, numberOfFriendRequests + 30);
     }
   };
 
@@ -173,11 +106,12 @@ const FriendRequest = () => {
     let isCancelled = false;
 
     if (!isCancelled) {
-      lazyLoadObjects();
+      window.addEventListener("scroll", loadMoreFriendRequestsOnScroll);
     }
 
     return () => {
       isCancelled = true;
+      window.removeEventListener("scroll", loadMoreFriendRequestsOnScroll);
     };
   }, [friendRequests]);
 
@@ -251,7 +185,7 @@ const FriendRequest = () => {
   }, [socket]);
 
   const acceptFriendRequest = async (friendRequest) => {
-    setButtonDisabled(true);
+    setDisabledButtonId(friendRequest.uid);
 
     if (loggedInUserInfo !== null) {
       let formData = new FormData();
@@ -269,14 +203,14 @@ const FriendRequest = () => {
         })
         .then((res) => {
           if (res.data.error && res.data.friend_request_not_exist) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Invalid user request!");
           } else if (res.data.error && res.data.notification_obj_not_found) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Something went wrong!");
             window.location.reload();
           } else if (res.data.error) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Failed to accept the friend request!");
           } else if (
             !res.data.error &&
@@ -298,15 +232,15 @@ const FriendRequest = () => {
         })
         .catch((err) => console.error(err));
 
-      setButtonDisabled(false);
+      setDisabledButtonId(-1);
     } else {
       alert("Failed to accept the friend request!");
-      setButtonDisabled(false);
+      setDisabledButtonId(-1);
     }
   };
 
   const deleteFriendRequest = async (friendRequest) => {
-    setButtonDisabled(true);
+    setDisabledButtonId(friendRequest.uid);
 
     if (loggedInUserInfo !== null) {
       let formData = new FormData();
@@ -324,20 +258,20 @@ const FriendRequest = () => {
         })
         .then((res) => {
           if (res.data.error && res.data.friend_request_not_exist) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Invalid user request!");
           } else if (
             res.data.error &&
             res.data.user_not_in_friend_request_list
           ) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Invalid user request!");
           } else if (res.data.error && res.data.notification_obj_not_found) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Something went wrong!");
             window.location.reload();
           } else if (res.data.error) {
-            setButtonDisabled(false);
+            setDisabledButtonId(-1);
             alert("Failed to delete the friend request!");
           } else if (
             !res.data.error &&
@@ -359,10 +293,10 @@ const FriendRequest = () => {
         })
         .catch((err) => console.error(err));
 
-      setButtonDisabled(false);
+      setDisabledButtonId(-1);
     } else {
       alert("Failed to delete the friend request!");
-      setButtonDisabled(false);
+      setDisabledButtonId(-1);
     }
   };
 
@@ -393,7 +327,6 @@ const FriendRequest = () => {
                 <Stack
                   id="friend__containerDiv"
                   direction="row"
-                  ref={friendRequestsRef}
                   style={{ flexWrap: "wrap", gap: "1rem" }}
                 >
                   {friendRequests.map((friendRequest) => (
@@ -438,7 +371,11 @@ const FriendRequest = () => {
 
                           <Stack direction="column" spacing={1}>
                             <LoadingButton
-                              loading={buttonDisabled}
+                              loading={
+                                disabledButtonId === friendRequest.uid
+                                  ? true
+                                  : false
+                              }
                               loadingPosition="end"
                               variant="contained"
                               style={{ textTransform: "capitalize" }}
@@ -449,7 +386,11 @@ const FriendRequest = () => {
                               Accept
                             </LoadingButton>
                             <LoadingButton
-                              loading={buttonDisabled}
+                              loading={
+                                disabledButtonId === friendRequest.uid
+                                  ? true
+                                  : false
+                              }
                               loadingPosition="end"
                               variant="contained"
                               style={{ textTransform: "capitalize" }}

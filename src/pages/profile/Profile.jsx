@@ -254,25 +254,30 @@ const Profile = () => {
               friendRequestData.friendRequestSender.uid,
               friendRequestData.friendRequestReceiver.uid
             );
+          } else if (
+            loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid
+          ) {
+            fetchCurrentProfileFriendOptionWithUser(
+              friendRequestData.friendRequestReceiver.uid,
+              friendRequestData.friendRequestSender.uid
+            );
           }
-        } else if (loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid) {
-          fetchCurrentProfileFriendOptionWithUser(
-            friendRequestData.friendRequestReceiver.uid,
-            friendRequestData.friendRequestSender.uid
-          );
         }
       });
 
       socket.on("friend-removed-from-user-list", (friendData) => {
-        if (
-          !isCancelled &&
-          loggedInUserInfo !== null &&
-          friendData.removedFriend.uid === loggedInUserInfo.uid
-        ) {
-          fetchCurrentProfileFriendOptionWithUser(
-            friendData.removedFriend.uid,
-            friendData.actionUser.uid
-          );
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (friendData.removedFriend.uid === loggedInUserInfo.uid) {
+            fetchCurrentProfileFriendOptionWithUser(
+              friendData.removedFriend.uid,
+              friendData.actionUser.uid
+            );
+          } else if (friendData.actionUser.uid === loggedInUserInfo.uid) {
+            fetchCurrentProfileFriendOptionWithUser(
+              friendData.actionUser.uid,
+              friendData.removedFriend.uid
+            );
+          }
         }
       });
     }

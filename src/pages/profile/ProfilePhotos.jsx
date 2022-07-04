@@ -19,7 +19,6 @@ import { colorTheme } from "../../components/colorTheme/ColorTheme";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 const ProfilePhotos = () => {
-  const profileAllPhotosRef = useRef(null);
   const [profileViewedImg, setProfileViewedImg] = useState(null);
   const currentProfile = ProfileStore((state) => state.currentProfile);
   const MYAPI = APIStore((state) => state.MYAPI);
@@ -45,26 +44,11 @@ const ProfilePhotos = () => {
   const canCurrentProfileEditable = ProfileStore(
     (state) => state.canCurrentProfileEditable
   );
+  const [numberOfPicRequests, setNumberOfPicRequests] = useState(30);
 
   const paramData = useParams();
 
   useEffect(() => {
-    const userLocalStorageSettings =
-      localStorage.getItem("user_storage_settings") &&
-      JSON.parse(localStorage.getItem("user_storage_settings"));
-
-    if (
-      userLocalStorageSettings &&
-      Object.keys(userLocalStorageSettings).length > 0
-    ) {
-      userLocalStorageSettings["pic_requests"] = 5;
-
-      localStorage.setItem(
-        "user_storage_settings",
-        JSON.stringify(userLocalStorageSettings)
-      );
-    }
-
     window.scrollTo({
       top: 0,
       left: 0,
@@ -101,10 +85,10 @@ const ProfilePhotos = () => {
     };
   }, [paramData]);
 
-  const fetchProfileAllProfilePics = async (userUid, numberOfProfilePics) => {
+  const fetchProfileAllProfilePics = async (userUid, numberOfRequests) => {
     await axios
       .get(
-        `${MYAPI}/authentication/fetch-user-all-profile-pics/${userUid}/${numberOfProfilePics}/`,
+        `${MYAPI}/authentication/fetch-user-all-profile-pics/${userUid}/${numberOfRequests}/`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -127,7 +111,7 @@ const ProfilePhotos = () => {
                   ...res.data.profile_pics,
                 ]);
 
-            res.data.profile_pics.length < 5 && setLoadMorePics(false);
+            res.data.profile_pics.length < 30 && setLoadMorePics(false);
           } else {
             setLoadMorePics(false);
           }
@@ -192,21 +176,9 @@ const ProfilePhotos = () => {
     let isCancelled = false;
     setIsLoading(true);
 
-    if (currentProfile !== null) {
-      if (!isCancelled) {
-        const userLocalStorageSettings =
-          localStorage.getItem("user_storage_settings") &&
-          JSON.parse(localStorage.getItem("user_storage_settings"));
-
-        if (
-          userLocalStorageSettings &&
-          Object.keys(userLocalStorageSettings).length > 0
-        ) {
-          const numberOfPics = userLocalStorageSettings["pic_requests"];
-          userProfilePics.length === 0 &&
-            fetchProfileAllProfilePics(currentProfile.uid, numberOfPics);
-        }
-      }
+    if (!isCancelled && currentProfile !== null) {
+      userProfilePics.length === 0 &&
+        fetchProfileAllProfilePics(currentProfile.uid, numberOfPicRequests);
 
       // If user added new profile pic, then fetch all the profile pics again
       if (currentProfilePic !== null) {
@@ -217,26 +189,10 @@ const ProfilePhotos = () => {
         ) {
           setUserProfilePics([]);
           setCurrentProfilePic(null);
+          setNumberOfPicRequests(30);
 
           if (!isCancelled) {
-            const userLocalStorageSettings =
-              localStorage.getItem("user_storage_settings") &&
-              JSON.parse(localStorage.getItem("user_storage_settings"));
-
-            if (
-              userLocalStorageSettings &&
-              Object.keys(userLocalStorageSettings).length > 0
-            ) {
-              userLocalStorageSettings["pic_requests"] = 5;
-
-              localStorage.setItem(
-                "user_storage_settings",
-                JSON.stringify(userLocalStorageSettings)
-              );
-
-              const numberOfPics = userLocalStorageSettings["pic_requests"];
-              fetchProfileAllProfilePics(currentProfile.uid, numberOfPics);
-            }
+            fetchProfileAllProfilePics(currentProfile.uid, 30);
           }
         }
       }
@@ -282,29 +238,10 @@ const ProfilePhotos = () => {
           setUserProfilePics([]);
 
           if (!isCancelled) {
-            const userLocalStorageSettings =
-              localStorage.getItem("user_storage_settings") &&
-              JSON.parse(localStorage.getItem("user_storage_settings"));
+            setNumberOfPicRequests(30);
 
-            if (
-              userLocalStorageSettings &&
-              Object.keys(userLocalStorageSettings).length > 0
-            ) {
-              userLocalStorageSettings["pic_requests"] = 5;
-
-              localStorage.setItem(
-                "user_storage_settings",
-                JSON.stringify(userLocalStorageSettings)
-              );
-
-              const numberOfPics = userLocalStorageSettings["pic_requests"];
-              userProfilePics.length === 0 &&
-                fetchProfileAllProfilePics(accountObj.uid, numberOfPics);
-            }
-          }
-
-          if (!isCancelled) {
-
+            userProfilePics.length === 0 &&
+                fetchProfileAllProfilePics(accountObj.uid, 30);
           }
         }
       });
@@ -315,53 +252,16 @@ const ProfilePhotos = () => {
     };
   }, [socket]);
 
-  // Load more pic on observer
-  const objectObserver = new IntersectionObserver(
-    (entries, objectObserver) => {
-      let objObservedArr = [];
+  const loadMoreProfilePicOnScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+      document.documentElement.offsetHeight
+    )
+      return;
 
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        objObservedArr.push(entry.isIntersecting);
-        objectObserver.unobserve(entry.target);
-
-        if (objObservedArr.length >= 3 && currentProfile !== null) {
-          const userLocalStorageSettings =
-            localStorage.getItem("user_storage_settings") &&
-            JSON.parse(localStorage.getItem("user_storage_settings"));
-
-          if (
-            userLocalStorageSettings &&
-            Object.keys(userLocalStorageSettings).length > 0
-          ) {
-            const numberOfPics = userLocalStorageSettings["pic_requests"];
-
-            userLocalStorageSettings["pic_requests"] += 5;
-            localStorage.setItem(
-              "user_storage_settings",
-              JSON.stringify(userLocalStorageSettings)
-            );
-
-            fetchProfileAllProfilePics(currentProfile.uid, numberOfPics + 5);
-          }
-          objObservedArr = [];
-        }
-      });
-    },
-    {
-      threshold: 0.3,
-    }
-  );
-
-  const lazyLoadObjects = () => {
-    if (profileAllPhotosRef.current !== null) {
-      const imgDivs = profileAllPhotosRef.current.querySelectorAll(
-        ".profile__photoImgDiv"
-      );
-
-      imgDivs.forEach((obj) => {
-        objectObserver.observe(obj);
-      });
+    if (currentProfile !== null) {
+      setNumberOfPicRequests(numberOfPicRequests + 30);
+      fetchProfileAllProfilePics(currentProfile.uid, numberOfPicRequests + 30);
     }
   };
 
@@ -369,11 +269,12 @@ const ProfilePhotos = () => {
     let isCancelled = false;
 
     if (!isCancelled) {
-      lazyLoadObjects();
+      window.addEventListener("scroll", loadMoreProfilePicOnScroll);
     }
 
     return () => {
       isCancelled = true;
+      window.removeEventListener("scroll", loadMoreProfilePicOnScroll);
     };
   }, [userProfilePics]);
 
@@ -433,7 +334,7 @@ const ProfilePhotos = () => {
               </Typography>
 
               {userProfilePics.length > 0 ? (
-                <div ref={profileAllPhotosRef} id="profile__allPhotosDiv">
+                <div id="profile__allPhotosDiv">
                   {userProfilePics.map((profilePic) => (
                     <div
                       key={profilePic.uid}
