@@ -28,7 +28,7 @@ class FetchUserAllFriendsView(View):
             }
         else:
             upper = number_of_requests
-            lower = upper - 5
+            lower = upper - 30
 
             all_friends = friend_obj.friends.all().order_by("-created_at")
             friend_counter = len(all_friends)
@@ -125,7 +125,7 @@ class FetchUserAllFriendRequestsView(View):
             }
         else:
             upper = number_of_requests
-            lower = upper - 5
+            lower = upper - 30
 
             friend_requests = friend_request_obj.friend_request_senders.all().order_by(
                 "-created_at")[lower:upper]
@@ -533,7 +533,7 @@ class FriendRequestList(APIView, CustomPagination):
                             "error": True,
                             "friend_obj_not_found": True
                         }
-                    else:
+                    else:                        
                         user_friend_obj.friends.remove(current_profile_obj.uid)
                         current_profile_friend_obj.friends.remove(user_obj.uid)
 

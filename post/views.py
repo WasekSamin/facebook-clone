@@ -13,21 +13,15 @@ from django.views import View
 
 # Showing 3 posts for now
 class ProfileUserPostView(View):
-    def get(self, request, **kwargs):
+    def get(self, request, user_uid, number_of_posts):
         json_resp = {
             "error": True
         }
 
-        user_uid = kwargs["user_uid"]
-        upper = kwargs["number_of_posts"]
+        upper = number_of_posts
         lower = upper - 3
-
-        account_obj = Account.get_account_obj_using_uid(self, user_uid)
-
-        if account_obj is None:
-            return JsonResponse(json_resp, safe=False)
         
-        post_objs = Post.objects.filter(user=account_obj).order_by("-created_at")[lower:upper]
+        post_objs = Post.objects.filter(user__uid=user_uid).order_by("-created_at")[lower:upper]
 
         post_obj_list = list(map(
             lambda item: {

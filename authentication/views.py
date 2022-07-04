@@ -315,7 +315,7 @@ class FetchUserAllProfilePicsView(View):
             return JsonResponse(json_resp, safe=False)
         else:
             upper = number_of_pics
-            lower = upper - 5
+            lower = upper - 30
 
             profile_pics = account_obj.all_profile_pics.all().order_by("-created_at")[lower:upper]
             profile_pic_list = list(map(lambda pic: {
