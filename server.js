@@ -56,6 +56,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("receiver-accept-friend-request", (friendRequestData) => {
+    console.log(friendRequestData);
     if (friendRequestData) {
       const room = friendRequestData.receiverToken;
       socket.join(room);
