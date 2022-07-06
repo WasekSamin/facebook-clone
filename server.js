@@ -56,7 +56,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("receiver-accept-friend-request", (friendRequestData) => {
-    console.log(friendRequestData);
     if (friendRequestData) {
       const room = friendRequestData.receiverToken;
       socket.join(room);
@@ -81,4 +80,17 @@ io.on("connection", (socket) => {
       socket.to(userRoom).emit("friend-removed-from-user-list", friendData);
     }
   });
+
+  // After user accept or removed something from notification
+  socket.on("send-friend-request-notification", notificationObj => {
+    if (notificationObj) {
+      const room = notificationObj.receiverToken;
+      socket.join(room);
+      socket.to(room).emit("receive-friend-request-notification", notificationObj);
+
+      const userRoom = notificationObj.userToken;
+      socket.join(userRoom);
+      socket.to(userRoom).emit("receive-friend-request-notification", notificationObj);
+    }
+  })
 });
