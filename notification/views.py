@@ -1,4 +1,6 @@
 from .models import Notification, NotificationCounter
+from friend.models import Friend, FriendRequest
+from authentication.models import Account
 from .serializers import NotificationSerializer, NotificationCounterSerializer
 from django.http import Http404, JsonResponse
 from rest_framework.views import APIView
@@ -41,7 +43,7 @@ class FetchUserNotificationsView(View):
         json_resp = {
             "error": False,
             "notification_found": True,
-            "notifications": notification_list
+            "notifications": notification_list,
         }
 
         return JsonResponse(json_resp, safe=False)
@@ -86,12 +88,43 @@ class NotificationDetail(APIView):
         }
 
         accept_friend_request = request.data.get("acceptFriendRequest", None)
+        remove_friend_request = request.data.get("removeFriendRequest", None)
 
         if accept_friend_request == "true":
             notification_obj = self.get_object(uid)
             
             if not notification_obj.is_friend_request_accepted:
-                pass
+                receiver_token = Account.check_for_account_token(self, notification_obj.notified_sender)
+
+                if receiver_token is None:
+                    resp_msg = {
+                        "error": True,
+                        "receiver_token_not_found": True
+                    }
+                    return Response(resp_msg)
+
+                notification_sender_uid = notification_obj.notified_sender.uid
+                notification_obj.friend_request.friend_request_senders.remove(notification_sender_uid)
+
+                receiver_friend_obj, created = Friend.objects.get_or_create(
+                    user=notification_obj.user
+                )
+                receiver_friend_obj.friends.add(notification_sender_uid)
+                
+                sender_friend_obj, created = Friend.objects.get_or_create(
+                    user=notification_obj.notified_sender
+                )
+                sender_friend_obj.friends.add(notification_obj.user.uid)
+
+                notification_obj.is_friend_request_accepted = True
+                notification_obj.save(update_fields=["is_friend_request_accepted"])
+
+                resp_msg = {
+                    "error": False,
+                    "friend_request_accepted": True,
+                    "receiver_token": receiver_token.key,
+                    "notification_sender_uid": notification_sender_uid
+                }
             else:
                 resp_msg = {
                     "error": True,
@@ -102,9 +135,31 @@ class NotificationDetail(APIView):
         return Response(resp_msg)
 
     def delete(self, request, uid, format=None):
-        snippet = self.get_object(uid)
-        snippet.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        notification_obj = self.get_object(uid)
+
+        if notification_obj.notification_type == "friend":
+            notification_sender_uid = notification_obj.notified_sender.uid
+            notification_obj.friend_request.friend_request_senders.remove(notification_sender_uid)
+
+            receiver_token = Account.check_for_account_token(self, notification_obj.notified_sender)
+
+            if receiver_token is None:
+                resp_msg = {
+                    "error": True,
+                    "receiver_token_not_found": True
+                }
+                return Response(resp_msg)
+
+        notification_obj.delete()
+
+        resp_msg = {
+            "error": False,
+            "notification_friend_request_deleted": True,
+            "receiver_token": receiver_token.key,
+            "notification_sender_uid": notification_sender_uid
+        }
+
+        return Response(resp_msg)
 
 
 class NotificationCounterList(APIView, CustomPagination):

@@ -129,7 +129,7 @@ class AccountDetail(APIView):
                     user_profile_pic_obj.save()
 
                     account_obj.current_profile_pic = profile_pic
-                    account_obj.save()
+                    account_obj.save(update_fields=["current_profile_pic"])
 
                     account_obj.all_profile_pics.add(user_profile_pic_obj.uid)
 
@@ -220,7 +220,10 @@ class AccountDetail(APIView):
                     account_obj.relation_status = relation_status
                     account_obj.updated_at = timezone.now()
 
-                    account_obj.save()
+                    account_obj.save(update_fields=["username", "address", "working_status",
+                            "studying_at", "working_at", "job_position", "phone_no", "gender",
+                            "relation_status", "updated_at"
+                        ])
 
                     resp_msg = {
                         "error": False,
