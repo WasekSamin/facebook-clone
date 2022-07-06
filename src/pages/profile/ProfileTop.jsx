@@ -412,7 +412,6 @@ const ProfileTop = () => {
               friendRequestSender: res.data.friend_request_sender,
               friendRequestReceiver: res.data.friend_request_receiver,
               receiverToken: res.data.receiver_token,
-              notificationUid: res.data.notification_obj_uid,
             });
           }
         })

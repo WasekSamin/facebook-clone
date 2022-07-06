@@ -26,6 +26,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
+import FriendRequestAcceptedModal from "./pages/notifications/FriendRequestAcceptedModal";
 
 function App() {
   let navigate = useNavigate();
@@ -207,6 +208,8 @@ function App() {
   return (
     <div className="App">
       <CssBaseline />
+      <FriendRequestAcceptedModal />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login/" element={<Login />} />

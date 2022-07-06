@@ -1,5 +1,5 @@
 import { Stack, Typography, Container } from "@mui/material";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../../components/navbar/Navbar";
 import ProfilePages from "./ProfilePages";
@@ -255,7 +255,7 @@ const ProfilePhotos = () => {
   const loadMoreProfilePicOnScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
+      document.documentElement.scrollHeight
     )
       return;
 

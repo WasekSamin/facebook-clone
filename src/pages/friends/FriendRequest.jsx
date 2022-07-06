@@ -1,5 +1,5 @@
 import { Container, Divider, Grid, Stack, Typography } from "@mui/material";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import "../../css/friends/FriendRequests.css";
 import FriendSidebar from "./FriendSidebar";
@@ -92,13 +92,16 @@ const FriendRequest = () => {
   const loadMoreFriendRequestsOnScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
+      document.documentElement.scrollHeight
     )
       return;
 
     if (loggedInUserInfo !== null) {
       setNumberOfFriendRequests(numberOfFriendRequests + 30);
-      fetchUserFriendRequests(loggedInUserInfo.uid, numberOfFriendRequests + 30);
+      fetchUserFriendRequests(
+        loggedInUserInfo.uid,
+        numberOfFriendRequests + 30
+      );
     }
   };
 
@@ -106,12 +109,16 @@ const FriendRequest = () => {
     let isCancelled = false;
 
     if (!isCancelled) {
-      window.addEventListener("scroll", loadMoreFriendRequestsOnScroll);
+      window.addEventListener("scroll", loadMoreFriendRequestsOnScroll, true);
     }
 
     return () => {
       isCancelled = true;
-      window.removeEventListener("scroll", loadMoreFriendRequestsOnScroll);
+      window.removeEventListener(
+        "scroll",
+        loadMoreFriendRequestsOnScroll,
+        true
+      );
     };
   }, [friendRequests]);
 
@@ -175,6 +182,16 @@ const FriendRequest = () => {
               (fr) => fr.uid !== friendRequestData.friendRequestSender.uid
             )
           );
+        }
+      });
+
+      socket.on("receive-friend-request-notification", (notificationObj) => {
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (notificationObj.sender.uid === loggedInUserInfo.uid) {
+            setFriendRequests((friendRequests) =>
+              friendRequests.filter((fr) => fr.uid !== notificationObj.receiver)
+            );
+          }
         }
       });
     }

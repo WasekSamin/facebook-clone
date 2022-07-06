@@ -1,8 +1,7 @@
 import { Avatar, Container, Divider, Stack, Typography } from "@mui/material";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import "../../css/notifications/Notification.css";
-import profileImg from "../../dummy/images/portImg.png";
 import dummyImg from "../../dummy/static_images/default_profile.png";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { colorTheme } from "../../components/colorTheme/ColorTheme";
@@ -13,6 +12,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   AccountStore,
   APIStore,
+  SocketStore,
   TokenStore,
 } from "../../components/store/Store";
 import axios from "axios";
@@ -31,6 +31,7 @@ const Notification = () => {
     numberOfNotificationRequests,
     setNumberOfNotificationRequests,
   ] = useState(30);
+  const socket = SocketStore((state) => state.socket);
 
   useEffect(() => {
     window.scrollTo({
@@ -95,7 +96,7 @@ const Notification = () => {
   const loadMoreNotificationOnScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
+      document.documentElement.scrollHeight
     )
       return;
 
@@ -112,14 +113,174 @@ const Notification = () => {
     let isCancelled = false;
 
     if (!isCancelled) {
-      window.addEventListener("scroll", loadMoreNotificationOnScroll);
+      window.addEventListener("scroll", loadMoreNotificationOnScroll, true);
     }
 
     return () => {
       isCancelled = true;
-      window.removeEventListener("scroll", loadMoreNotificationOnScroll);
+      window.removeEventListener("scroll", loadMoreNotificationOnScroll, true);
     };
   }, [notifications]);
+
+  const acceptFriendRequest = async (notificationUid) => {
+    setDisabledButtonId(notificationUid);
+
+    let formData = new FormData();
+    formData.append("acceptFriendRequest", true);
+
+    await axios
+      .put(
+        `${MYAPI}/notification/notification-detail/${notificationUid}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `token ${token}`,
+          },
+        }
+      )
+      .then((res) => {
+        if (res.data.error && res.data.friend_request_already_accepted) {
+          alert("You have already accepted the friend request!");
+          setDisabledButtonId(-1);
+          window.location.reload();
+        } else if (res.data.error && res.data.receiver_token_not_found) {
+          alert("Something went wrong!");
+          setDisabledButtonId(-1);
+          window.location.reload();
+        } else if (res.data.error) {
+          alert("Failed to accept the friend request! Something went wrong...");
+          setDisabledButtonId(-1);
+        } else if (!res.data.error && res.data.friend_request_accepted) {
+          setNotifications((notifications) =>
+            notifications.map((notification) =>
+              notification.uid === notificationUid
+                ? {
+                    ...notification,
+                    is_friend_request_accepted: true,
+                  }
+                : notification
+            )
+          );
+
+          if (loggedInUserInfo !== null) {
+            socket.emit("send-friend-request-notification", {
+              sender: loggedInUserInfo,
+              receiver: res.data.notification_sender_uid,
+              friendRequestAccepted: true,
+              receiverToken: res.data.receiver_token,
+              userToken: token,
+            });
+          }
+        }
+      })
+      .catch((err) => console.error(err));
+
+    setDisabledButtonId(-1);
+  };
+
+  const removeFriendRequest = async (notificationUid) => {
+    setDisabledButtonId(notificationUid);
+
+    await axios
+      .delete(`${MYAPI}/notification/notification-detail/${notificationUid}/`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `token ${token}`,
+        },
+      })
+      .then((res) => {
+        if (res.data.error && res.data.receiver_token_not_found) {
+          alert("Something went wrong!");
+          setDisabledButtonId(-1);
+          window.location.reload();
+        } else if (
+          !res.data.error &&
+          res.data.notification_friend_request_deleted
+        ) {
+          setNotifications((notifications) =>
+            notifications.filter(
+              (notification) => notification.uid !== notificationUid
+            )
+          );
+
+          if (loggedInUserInfo !== null) {
+            socket.emit("send-friend-request-notification", {
+              sender: loggedInUserInfo,
+              receiver: res.data.notification_sender_uid,
+              friendRequestRemoved: true,
+              receiverToken: res.data.receiver_token,
+              userToken: token,
+            });
+          }
+        }
+      })
+      .catch((err) => console.error(err));
+
+    setDisabledButtonId(-1);
+  };
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    if (socket !== null) {
+      if (!isCancelled && loggedInUserInfo !== null) {
+        socket.on("receive-friend-request", (friendRequestData) => {
+          if (
+            loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid
+          )
+            setNumberOfNotificationRequests(30);
+          fetchUserAllNotifications(
+            friendRequestData.friendRequestReceiver.uid,
+            30
+          );
+        });
+
+        socket.on(
+          "friend-request-deleted-from-receiver",
+          (friendRequestData) => {
+            if (
+              loggedInUserInfo.uid ===
+              friendRequestData.friendRequestReceiver.uid
+            ) {
+              setNumberOfNotificationRequests(30);
+              fetchUserAllNotifications(
+                friendRequestData.friendRequestReceiver.uid,
+                30
+              );
+            }
+          }
+        );
+
+        socket.on("friend-request-deleted-by-receiver", (friendRequestData) => {
+          if (loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid) {
+            setNumberOfNotificationRequests(30);
+            fetchUserAllNotifications(
+              friendRequestData.friendRequestReceiver.uid,
+              30
+            );
+          }
+        });
+
+        socket.on(
+          "friend-request-accepted-by-receiver",
+          (friendRequestData) => {
+            if (loggedInUserInfo.uid === friendRequestData.friendRequestReceiver.uid) {
+              setNumberOfNotificationRequests(30);
+              fetchUserAllNotifications(
+                friendRequestData.friendRequestReceiver.uid,
+                30
+              );
+            }
+          }
+        );
+      }
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [socket]);
 
   return (
     <div>
@@ -224,7 +385,7 @@ const Notification = () => {
                         </Link>
 
                         <Stack direction="column" spacing={0.7}>
-                          <Link to="#">
+                          <Link to={`/profile/${notification.notified_sender.uid}/${notification.notified_sender.username}/`}>
                             <Typography
                               variant="p"
                               style={{ color: "var(--slate-600)" }}
@@ -245,8 +406,15 @@ const Notification = () => {
                                 variant="contained"
                                 color="secondary"
                                 loadingPosition="end"
-                                loading={false}
+                                loading={
+                                  disabledButtonId === notification.uid
+                                    ? true
+                                    : false
+                                }
                                 style={{ textTransform: "capitalize" }}
+                                onClick={() =>
+                                  acceptFriendRequest(notification.uid)
+                                }
                               >
                                 <ThumbUpOffAltIcon />
                                 Accept
@@ -255,8 +423,15 @@ const Notification = () => {
                                 variant="contained"
                                 color="error"
                                 loadingPosition="end"
-                                loading={false}
+                                loading={
+                                  disabledButtonId === notification.uid
+                                    ? true
+                                    : false
+                                }
                                 style={{ textTransform: "capitalize" }}
+                                onClick={() =>
+                                  removeFriendRequest(notification.uid)
+                                }
                               >
                                 <DeleteOutlineIcon />
                                 Remove

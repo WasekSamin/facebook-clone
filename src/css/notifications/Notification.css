@@ -1,42 +1,58 @@
 #notification__mainDiv {
-    position: relative;
-    top: 5rem;
+  position: relative;
+  top: 5rem;
+}
+
+#notification__mainDiv::-webkit-scrollbar {
+  width: 10px;
+}
+
+#notification__mainDiv::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+}
+
+#notification__mainDiv::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  border-radius: 9999px;
 }
 
 #notification__div {
-    background-color: white;
-    width: 48%;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-    margin-left: 21.5%;
-    margin-bottom: 6rem;
+  background-color: white;
+  width: 48%;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  margin-left: 21.5%;
+  margin-bottom: 6rem;
 }
 
 .notification__link {
-    padding: 0.5rem;
-    border-radius: 10px;
+  padding: 0.5rem;
+  border-radius: 10px;
 }
 
 .notification__link:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 @media (max-width: 991px) {
-    #notification__div {
-        width: 60%;
-    }
+  #notification__div {
+    width: 60%;
+  }
 }
 
 @media (max-width: 767px) {
-    #notification__div {
-        width: 80%;
-        margin: 0 auto;
-    }
+  #notification__div {
+    width: 80%;
+    margin: 0 auto;
+    margin-bottom: 6rem;
+  }
 }
 
 @media (max-width: 499px) {
-    #notification__div {
-        width: 100%;
-    }
+  #notification__div {
+    width: 100%;
+  }
 }

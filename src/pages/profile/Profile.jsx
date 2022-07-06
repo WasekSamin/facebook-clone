@@ -280,6 +280,22 @@ const Profile = () => {
           }
         }
       });
+
+      socket.on("receive-friend-request-notification", (notificationObj) => {
+        if (!isCancelled && loggedInUserInfo !== null) {
+          if (notificationObj.receiver === loggedInUserInfo.uid) {
+            fetchCurrentProfileFriendOptionWithUser(
+              notificationObj.receiver,
+              notificationObj.sender.uid
+            );
+          } else if (notificationObj.sender.uid === loggedInUserInfo.uid) {
+            fetchCurrentProfileFriendOptionWithUser(
+              notificationObj.sender.uid,
+              notificationObj.receiver
+            );
+          }
+        }
+      });
     }
 
     return () => {

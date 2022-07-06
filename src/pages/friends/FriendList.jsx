@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import dummyImg from "../../dummy/static_images/default_profile.png";
 import { Link } from "react-router-dom";
@@ -96,7 +96,7 @@ const FriendList = () => {
   const loadMoreFriendsOnScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
+      document.documentElement.scrollHeight
     )
       return;
 
@@ -129,6 +129,13 @@ const FriendList = () => {
           fetchUserFriends(loggedInUserInfo.uid, 30);
         }
       });
+
+      socket.on("receive-friend-request-notification", notificationObj => {
+        if (!isCancelled && loggedInUserInfo !== null) {
+          setNumberOfFriendRequests(30);
+          fetchUserFriends(loggedInUserInfo.uid, 30);
+        }
+      })
 
       socket.on("friend-removed-from-user-list", (friendData) => {
         if (!isCancelled && loggedInUserInfo !== null) {
