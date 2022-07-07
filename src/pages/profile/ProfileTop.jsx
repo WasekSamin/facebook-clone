@@ -19,7 +19,9 @@ import {
 } from "../../components/store/Store";
 import PersonRemoveAlt1OutlinedIcon from "@mui/icons-material/PersonRemoveAlt1Outlined";
 import GroupRemoveOutlinedIcon from "@mui/icons-material/GroupRemoveOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 const ProfileTop = () => {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
@@ -424,8 +426,38 @@ const ProfileTop = () => {
     }
   };
 
+  // Redirecting to current profile chatbox
+  const messageFriend = async () => {
+    setIsLoading(true);
+    if (loggedInUserInfo !== null && currentProfile !== null) {
+      await axios
+        .get(
+          `${MYAPI}/chat/fetch-chat-object/${loggedInUserInfo.uid}/${currentProfile.uid}/`
+        )
+        .then((res) => {
+          if (res.data.error && res.data.user_not_found) {
+            toast.error("Invalid user request!");
+            setIsLoading(false);
+          } else if (res.data.error) {
+            alert("Something went wrong! Please try again...");
+            setIsLoading(false);
+          } else if (!res.data.error && res.data.chat_found) {
+            window.open(`/chat/${res.data.chat_uid}`, "_blank");
+          }
+        })
+        .catch((err) => console.error(err));
+
+      setIsLoading(false);
+    } else {
+      alert("Something went wrong!");
+      window.location.reload();
+    }
+  };
+
   return (
     <div>
+      <Toaster position="bottom-right" reverseOrder={false} />
+
       {/* Edit profile details modal */}
       {editProfileDetailsModal()}
 
@@ -565,16 +597,31 @@ const ProfileTop = () => {
               Edit Profile
             </Button>
           ) : checkProfileFriendOptionWithUser.friend ? (
-            <LoadingButton
-              loadingPosition="end"
-              loading={isLoading}
-              variant="contained"
-              color="error"
-              onClick={() => removeFriend()}
-            >
-              <GroupRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} />
-              UnFriend
-            </LoadingButton>
+            <Stack direction="column" spacing={1}>
+              <LoadingButton
+                loadingPosition="end"
+                loading={isLoading}
+                variant="contained"
+                color="error"
+                onClick={() => removeFriend()}
+              >
+                <GroupRemoveOutlinedIcon style={{ marginRight: "0.12rem" }} />
+                UnFriend
+              </LoadingButton>
+
+              <LoadingButton
+                loadingPosition="end"
+                loading={isLoading}
+                variant="contained"
+                color="secondary"
+                onClick={() => messageFriend()}
+              >
+                <ChatBubbleOutlineOutlinedIcon
+                  style={{ marginRight: "0.12rem" }}
+                />
+                Message
+              </LoadingButton>
+            </Stack>
           ) : checkProfileFriendOptionWithUser.sendFriendRequest ? (
             <LoadingButton
               loadingPosition="end"

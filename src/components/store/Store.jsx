@@ -168,3 +168,11 @@ export const FriendStore = create((set) => ({
       ),
     })),
 }));
+
+export const ChatStore = create((set) => ({
+  chatroomObj: null,
+  updateChatroomObj: (chatObj) =>
+    set((state) => ({
+      chatroomObj: chatObj,
+    })),
+}));

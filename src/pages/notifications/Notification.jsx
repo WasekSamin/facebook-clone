@@ -331,7 +331,7 @@ const Notification = () => {
                               style={{ color: "var(--slate-600)" }}
                             >
                               <span style={{ fontWeight: "600" }}>
-                                {notification.notified_sender.username}
+                                {notification.notified_sender.username.length > 11 ? `${notification.notified_sender.username.slice(0, 8)}...` : notification.notified_sender.username}
                               </span>{" "}
                               {notification.notification_type === "comment"
                                 ? "commented on your post"
@@ -391,7 +391,7 @@ const Notification = () => {
                               style={{ color: "var(--slate-600)" }}
                             >
                               <span style={{ fontWeight: "600" }}>
-                                {notification.notified_sender.username}
+                                {notification.notified_sender.username.length > 11 ? `${notification.notified_sender.username.slice(0, 8)}...` : notification.notified_sender.username}
                               </span>{" "}
                               sent you a friend request.
                             </Typography>

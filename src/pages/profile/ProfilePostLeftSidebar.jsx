@@ -11,8 +11,7 @@ import FemaleOutlinedIcon from "@mui/icons-material/FemaleOutlined";
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 import { Link } from "react-router-dom";
 import "../../css/profile/ProfilePostLeftSidebar.css";
-import profileImg from "../../dummy/images/portImg.png";
-import dummy1 from "../../dummy/images/img1.jpg";
+import dummyImg from "../../dummy/static_images/default_profile.png";
 import ProfileImageViewModal from "../../components/profile/ProfileImageViewModal";
 import { motion, AnimatePresence } from "framer-motion/dist/framer-motion";
 import EditProfileModal from "../../components/profile/EditProfileModal";
@@ -32,6 +31,8 @@ const ProfilePostLeftSidebar = () => {
   const [userProfilePics, setUserProfilePics] = useState([]);
   const [profileAboutIsLoading, setProfileAboutIsLoading] = useState(false);
   const [profilePicIsLoading, setProfilePicIsLoading] = useState(false);
+  const [profileFriends, setProfileFriends] = useState([]);
+  const [profileFriendIsLoading, setProfileFriendIsLoading] = useState(false);
 
   const fetchProfileAllProfilePics = async (userUid) => {
     await axios
@@ -52,16 +53,39 @@ const ProfilePostLeftSidebar = () => {
     setProfilePicIsLoading(false);
   };
 
+  const fetchProfileAllFriends = async (userUid) => {
+    await axios
+      .get(`${MYAPI}/friend/fetch-user-some-friends/${userUid}/`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        if (res.data.error) {
+          setProfileFriendIsLoading(false);
+        } else if (!res.data.error && res.data.error_finding_friend) {
+          setProfileFriendIsLoading(false);
+        } else if (!res.data.error && res.data.friend_found) {
+          setProfileFriends(res.data.friends);
+        }
+      })
+      .catch((err) => console.error(err));
+
+    setProfileFriendIsLoading(false);
+  };
+
   useEffect(() => {
     let isCancelled = false;
     setProfileAboutIsLoading(true);
     setProfilePicIsLoading(true);
+    setProfileFriendIsLoading(true);
 
     if (currentProfile !== null) {
       setProfileAboutIsLoading(false);
 
       if (!isCancelled) {
         fetchProfileAllProfilePics(currentProfile.uid);
+        fetchProfileAllFriends(currentProfile.uid);
       }
     }
 
@@ -415,135 +439,60 @@ const ProfilePostLeftSidebar = () => {
             </Link>
           </Stack>
 
-          {/* ONLY SHOW 9 IMAGES */}
-          <div className="profile__sidebarPhotosGrid">
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
+          {/* ONLY SHOW 9 FRIENDS */}
+          {profileFriends.length > 0 ? (
+            <div className="profile__sidebarPhotosGrid">
+              {profileFriends.map((friend) => (
+                <Stack key={friend.uid} direction="column" spacing={0.7} alignItems="center">
+                  <Link
+                    to={`/profile/${friend.uid}/${friend.username}/`}
+                    className="profile__sidebarPhoto"
+                  >
+                    <img
+                      src={
+                        friend.current_profile_pic !== null
+                          ? `${MYAPI}${friend.current_profile_pic}`
+                          : dummyImg
+                      }
+                      alt=""
+                    />
+                  </Link>
+                  <Link
+                    to={`/profile/${friend.uid}/${friend.username}/`}
+                    style={{ color: "black", textAlign: "center" }}
+                  >
+                    <Typography
+                      className="profile__sidebarFriendUsernameText"
+                      variant="p"
+                      style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
+                    >
+                      {friend.username}
+                    </Typography>
+                  </Link>
+                </Stack>
+              ))}
+            </div>
+          ) : profileFriendIsLoading ? (
+            <Stack direction="row" justifyContent="center">
+              <RefreshIcon
+                className="profile__allPicsSpinner"
+                style={{ color: "var(--slate-500)", marginBottom: "1rem" }}
+              />
             </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
+          ) : (
+            <Stack direction="row" justifyContent="center">
+              <Typography
+                variant="p"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: "1rem",
+                  color: `${colorTheme.palette.secondary.main}`,
+                }}
+              >
+                No friend found yet!
+              </Typography>
             </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-            <Stack direction="column" spacing={0.7} alignItems="center">
-              <Link to="#" className="profile__sidebarPhoto">
-                <img src={dummy1} alt="" />
-              </Link>
-              <Link to="#" style={{ color: "black", textAlign: "center" }}>
-                <Typography
-                  className="profile__sidebarFriendUsernameText"
-                  variant="p"
-                  style={{ fontSize: "0.95rem", color: "var(--slate-600)" }}
-                >
-                  Wasek Samin
-                </Typography>
-              </Link>
-            </Stack>
-          </div>
+          )}
         </Stack>
       </Stack>
     </div>

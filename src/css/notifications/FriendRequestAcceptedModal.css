@@ -1,8 +1,20 @@
-#friend__requestAcceptedModalDiv {
+#friend__requestAcceptedModalMainDiv {
     position: fixed;
-    bottom: calc(0 + 200px);
-    left: 1%;
+    top: 0;
+    left: 0;
     width: 30%;
+    max-width: 1200px;
+    margin: 0 16px;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+}
+
+#friend__requestAcceptedModalDiv {
+    position: absolute;
+    top: calc(100vh - 180px);
+    left: 0;
+    width: 100%;
     padding: 10px;
     background-color: white;
     border-radius: 10px;
@@ -11,4 +23,47 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    pointer-events: initial;
+}
+
+@media (max-width: 1099px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 35%;
+    }
+}
+
+@media (max-width: 899px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 40%;
+    }
+}
+
+@media (max-width: 790px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 45%;
+    }
+}
+
+@media (max-width: 740px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 50%;
+    }
+}
+
+@media (max-width: 640px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 93%;
+    }
+}
+
+@media (max-width: 429px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 92%;
+    }
+}
+
+@media (max-width: 359px) {
+    #friend__requestAcceptedModalMainDiv {
+        width: 90%;
+    }
 }

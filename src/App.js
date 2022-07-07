@@ -215,6 +215,7 @@ function App() {
         <Route path="/login/" element={<Login />} />
         <Route path="/register/" element={<Register />} />
         <Route path="/chat/" element={<Chat />} />
+        <Route path="/chat/:chat_uid/" element={<Chat />} />
         <Route path="/notifications/" element={<Notification />} />
         <Route path="/friend-requests/" element={<FriendRequest />} />
         <Route path="/friend-list/" element={<FriendList />} />
