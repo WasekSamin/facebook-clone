@@ -81,7 +81,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // After user accept or removed something from notification
+  // After user accept or removed friend request from notification
   socket.on("send-friend-request-notification", notificationObj => {
     if (notificationObj) {
       const room = notificationObj.receiverToken;
