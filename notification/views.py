@@ -75,10 +75,17 @@ class NotificationDetail(APIView):
         try:
             return Notification.objects.get(uid=uid)
         except Notification.DoesNotExist:
-            raise Http404
+            return None
 
     def get(self, request, uid, format=None):
         snippet = self.get_object(uid)
+
+        if snippet is None:
+            resp_msg = {
+                "error": True
+            }
+            return Response(resp_msg)
+
         serializer = NotificationSerializer(snippet)
         return Response(serializer.data)
 
@@ -88,10 +95,15 @@ class NotificationDetail(APIView):
         }
 
         accept_friend_request = request.data.get("acceptFriendRequest", None)
-        remove_friend_request = request.data.get("removeFriendRequest", None)
 
         if accept_friend_request == "true":
             notification_obj = self.get_object(uid)
+
+            if notification_obj is None:
+                resp_msg = {
+                    "error": True
+                }
+                return Response(resp_msg)
             
             if not notification_obj.is_friend_request_accepted:
                 receiver_token = Account.check_for_account_token(self, notification_obj.notified_sender)
@@ -136,6 +148,12 @@ class NotificationDetail(APIView):
 
     def delete(self, request, uid, format=None):
         notification_obj = self.get_object(uid)
+
+        if notification_obj is None:
+            resp_msg = {
+                "error": True
+            }
+            return Response(resp_msg)
 
         if notification_obj.notification_type == "friend":
             notification_sender_uid = notification_obj.notified_sender.uid

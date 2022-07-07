@@ -12,6 +12,49 @@ from facebook_core.custom_pagination import CustomPagination
 from django.views import View
 
 
+# Fetch 9 friends of the user/current profile
+class FetchUserSomeFriendsVeiew(View):
+    def get(self, request, user_uid):
+        json_resp = {
+            "error": True
+        }
+
+        try:
+            friend_obj = Friend.objects.get(user__uid=user_uid)
+        except Friend.DoesNotExist:
+            json_resp = {
+                "error": False,
+                "error_finding_friend": True
+            }
+            return JsonResponse(json_resp, safe=False)
+        else:
+            friends = friend_obj.friends.all().order_by("-created_at")[0:9]
+
+            friend_list = list(map(lambda friend: {
+                "uid": friend.uid,
+                "username": friend.username,
+                "email": friend.email,
+                "address": friend.address,
+                "phone_no": friend.phone_no,
+                "working_status": friend.working_status,
+                "studying_at": friend.studying_at,
+                "working_at": friend.working_at,
+                "job_position": friend.job_position,
+                "current_profile_pic": friend.current_profile_pic.url if friend.current_profile_pic else None,
+                "gender": friend.gender,
+                "relation_status": friend.relation_status,
+                "created_at": friend.created_at,
+                "updated_at": friend.updated_at
+            }, friends))
+
+            json_resp = {
+                "error": False,
+                "friend_found": True,
+                "friends": friend_list
+            }
+
+        return JsonResponse(json_resp, safe=False)
+
 class FetchUserAllFriendsView(View):
     def get(self, request, user_uid, number_of_requests):
         json_resp = {

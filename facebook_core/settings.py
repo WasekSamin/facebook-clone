@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "post.apps.PostConfig",
     "friend.apps.FriendConfig",
     "notification.apps.NotificationConfig",
+    "chat.apps.ChatConfig",
 ]
 
 MIDDLEWARE = [
