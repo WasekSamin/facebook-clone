@@ -93,4 +93,16 @@ io.on("connection", (socket) => {
       socket.to(userRoom).emit("receive-friend-request-notification", notificationObj);
     }
   })
+
+  socket.on("send-message", chatMessageObj => {
+    if (chatMessageObj) {
+      // Sending message to receiver
+      const room = chatMessageObj.receiverToken;
+      socket.join(room);
+      socket.to(room).emit("receive-message", chatMessageObj);
+
+      // Sending message to the sender
+      socket.emit("receive-message-to-self", chatMessageObj);
+    }
+  })
 });
