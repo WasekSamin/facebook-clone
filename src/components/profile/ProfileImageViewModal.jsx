@@ -1,4 +1,4 @@
-import { IconButton, Stack } from "@mui/material";
+import { IconButton } from "@mui/material";
 import React, { useRef, useEffect } from "react";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import "../../css/profile/ProfileImageViewModal.css";

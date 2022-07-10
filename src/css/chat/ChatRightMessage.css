@@ -18,8 +18,9 @@
 
 .chat__rightSelfUserMessage {
   margin-left: auto !important;
-  padding: 0.5rem;
+  padding-right: 0.5rem;
   border-radius: 10px;
+  justify-content: flex-end;
 }
 
 .chat__rightSelfUserMessage > div > span {

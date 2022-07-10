@@ -1,6 +1,7 @@
 #chat__mainDiv {
-    position: relative;
+    position: fixed;
     top: 4rem;
+    width: 100%;
 }
 
 /* For mobile & tab screen */
