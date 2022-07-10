@@ -119,13 +119,28 @@ const ChatLeftUsers = () => {
     if (socket !== null) {
       socket.on("receive-message", (chatMessageObj) => {
         if (!isCancelled) {
-          console.log(chatMessageObj);
+          const msgObj = chatMessageObj.chatMessageObj;
+
+          setFriendsWithChat((friendsWithChat) =>
+            friendsWithChat.filter((fwc) => fwc.friend.uid !== msgObj.sender.uid)
+          );
+          setFriendsWithChat((prev) => [
+            {
+              friend: {
+                uid: msgObj.sender.uid,
+                username: msgObj.sender.username,
+                email: msgObj.sender.email,
+                current_profile_pic: msgObj.sender.current_profile_pic,
+              },
+              last_msg: msgObj.message,
+            },
+            ...prev,
+          ]);
         }
       });
 
       socket.on("receive-message-to-self", (chatMessageObj) => {
         if (!isCancelled) {
-          console.log(chatMessageObj);
           const msgObj = chatMessageObj.chatMessageObj;
           let receiverObj = null;
 
