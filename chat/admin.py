@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Chat, ChatMessageSeen, ChatCounter
+from .models import Chat, ChatMessageSeen, ChatCounter, ChatMessage, ChatLastMessage
 
 
 @admin.register(Chat)
@@ -8,6 +8,21 @@ class ChatAdmin(admin.ModelAdmin):
     list_display = (
         "uid", "user1", "user2",
         "created_at"
+    )
+
+
+@admin.register(ChatMessage)
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_display = (
+        "uid", "chat", "sender",
+        "message", "created_at"
+    )
+
+
+@admin.register(ChatLastMessage)
+class ChatLastMessageAdmin(admin.ModelAdmin):
+    list_display = (
+        "uid", "chat", "last_message", "created_at", "updated_at"
     )
 
 

@@ -6,8 +6,10 @@ from django.utils import timezone
 
 class Friend(models.Model):
     uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    user = models.OneToOneField(Account, on_delete=models.CASCADE, null=True, related_name="friend_user")
-    friends = models.ManyToManyField(Account, blank=True, related_name="friend_all_friends")
+    user = models.OneToOneField(
+        Account, on_delete=models.CASCADE, null=True, related_name="friend_user")
+    friends = models.ManyToManyField(
+        Account, blank=True, related_name="friend_all_friends")
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -25,12 +27,24 @@ class Friend(models.Model):
         else:
             return friend_obj
 
+    # Get friend object using user uid
+    def get_friend_obj_using_user_uid(self, user_uid):
+        try:
+            friend_obj = Friend.objects.get(user__uid=user_uid)
+        except Friend.DoesNotExist:
+            return None
+        else:
+            return friend_obj
 
 # For receiver friend requests
+
+
 class FriendRequest(models.Model):
     uid = models.UUIDField(primary_key=True, editable=False, default=uuid4)
-    user = models.OneToOneField(Account, on_delete=models.CASCADE, null=True, related_name="friend_request_user")
-    friend_request_senders = models.ManyToManyField(Account, blank=True, related_name="friend_requet_senders")
+    user = models.OneToOneField(
+        Account, on_delete=models.CASCADE, null=True, related_name="friend_request_user")
+    friend_request_senders = models.ManyToManyField(
+        Account, blank=True, related_name="friend_requet_senders")
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
